@@ -1,0 +1,11 @@
+@openzeppelin/=lib/UDS/node_modules/@openzeppelin/
+ArrayUtils/=lib/ArrayUtils/src/
+ERC721A/=lib/ERC721M/lib/ERC721A/contracts/
+ERC721M/=lib/ERC721M/src/
+UDS/=lib/UDS/src/
+ds-test/=lib/ERC721M/lib/ds-test/src/
+forge-std/=lib/forge-std/src/
+fx-portal/=lib/fx-portal/contracts/
+openzeppelin-contracts/=lib/ERC721M/lib/openzeppelin-contracts/
+openzeppelin/=lib/ERC721M/lib/openzeppelin-contracts/
+solmate/=lib/solmate/src/
