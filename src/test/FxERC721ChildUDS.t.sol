@@ -9,9 +9,9 @@ import {UUPSUpgradeV} from "UDS/proxy/UUPSUpgradeV.sol";
 
 import "ArrayUtils/ArrayUtils.sol";
 
-import "../child/FxERC721SyncedChildUDS.sol";
+import "../child/FxERC721ChildUDS.sol";
 
-contract Logic is UUPSUpgradeV(1), FxERC721SyncedChildUDS {
+contract Logic is UUPSUpgradeV(1), FxERC721ChildUDS {
     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
 
     function _authorizeUpgrade() internal override {}
