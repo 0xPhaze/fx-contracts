@@ -53,7 +53,7 @@ abstract contract FxERC721MRoot is FxBaseRootTunnel, ERC721M {
     // @note using `_unlockWithProof` is the 'correct' way for transmitting messages L2 -> L1
     // validate ERC721 lock on L2 first, then unlock on L1 with tx inclusion proof
     // NFTs can be traded/sold on L2 if adapted to transfer from current owner to new `from`
-    function _unlockWithProof(bytes calldata inputData) public virtual {
+    function _unlockWithProof(bytes calldata inputData) internal virtual {
         bytes memory message = _validateAndExtractMessage(inputData);
 
         (address from, uint256[] memory tokenIds) = abi.decode(
