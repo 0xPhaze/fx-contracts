@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {ERC721UDS, s as erc721DS} from "UDS/ERC721UDS.sol";
+import {ERC721UDS, s as erc721DS} from "UDS/tokens/ERC721UDS.sol";
 
-import {FxBaseChildTunnelUDS} from "./FxBaseChildTunnelUDS.sol";
+import {FxBaseChildTunnelUDS} from "./fx-portal/FxBaseChildTunnelUDS.sol";
 
 /* ------------- Storage ------------- */
 
@@ -11,14 +11,11 @@ import {FxBaseChildTunnelUDS} from "./FxBaseChildTunnelUDS.sol";
 bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD = 0xd27a8eb27deabdc64caf45238ddcae36cb801813141fe6660d7723da1fb1287b;
 
 struct FxERC721ChildDS {
-    // L1 owner; not really used other than for displaying in UI
-    mapping(uint256 => address) rootOwnerOf;
+    mapping(uint256 => address) rootOwnerOf; // L1 owner; not really used other than for displaying in UI
 }
 
 function s() pure returns (FxERC721ChildDS storage diamondStorage) {
-    assembly {
-        diamondStorage.slot := DIAMOND_STORAGE_FX_ERC721_CHILD
-    }
+    assembly { diamondStorage.slot := DIAMOND_STORAGE_FX_ERC721_CHILD } // prettier-ignore
 }
 
 /* ------------- Error ------------- */
@@ -39,10 +36,7 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
         address, /* sender */
         bytes calldata data
     ) internal virtual override {
-        (bool mint, address to, uint256[] memory tokenIds) = abi.decode(
-            data,
-            (bool, address, uint256[])
-        );
+        (bool mint, address to, uint256[] memory tokenIds) = abi.decode(data, (bool, address, uint256[]));
 
         address owner;
         uint256 tokenId;

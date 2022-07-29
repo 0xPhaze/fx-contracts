@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {FxBaseRootTunnel} from "fx-portal/tunnel/FxBaseRootTunnel.sol";
-
+import {FxBaseRootTunnel} from "./fx-portal/tunnel/FxBaseRootTunnel.sol";
 import {ERC721M} from "ERC721M/ERC721M.sol";
 
 error Disabled();
@@ -25,9 +24,7 @@ abstract contract FxERC721MRoot is FxBaseRootTunnel, ERC721M {
         _sendMessageToChild(abi.encode(true, to, tokenIds));
     }
 
-    function _lockAndTransmit(address to, uint256[] calldata tokenIds)
-        internal
-    {
+    function _lockAndTransmit(address to, uint256[] calldata tokenIds) internal {
         unchecked {
             for (uint256 i; i < tokenIds.length; ++i) _lock(to, tokenIds[i]);
         }
@@ -39,12 +36,9 @@ abstract contract FxERC721MRoot is FxBaseRootTunnel, ERC721M {
     // this assumes L1 state as the single source of truth
     // messages are always pushed L1 -> L2 without knowing state on L2
     // this means that NFTs should not be allowed to be traded/sold on L2
-    function _unlockAndTransmit(address from, uint256[] calldata tokenIds)
-        internal
-    {
+    function _unlockAndTransmit(address from, uint256[] calldata tokenIds) internal {
         unchecked {
-            for (uint256 i; i < tokenIds.length; ++i)
-                _unlock(from, tokenIds[i]);
+            for (uint256 i; i < tokenIds.length; ++i) _unlock(from, tokenIds[i]);
         }
 
         _sendMessageToChild(abi.encode(false, from, tokenIds));
@@ -56,10 +50,7 @@ abstract contract FxERC721MRoot is FxBaseRootTunnel, ERC721M {
     function _unlockWithProof(bytes calldata inputData) internal virtual {
         bytes memory message = _validateAndExtractMessage(inputData);
 
-        (address from, uint256[] memory tokenIds) = abi.decode(
-            message,
-            (address, uint256[])
-        );
+        (address from, uint256[] memory tokenIds) = abi.decode(message, (address, uint256[]));
 
         uint256 length = tokenIds.length;
 

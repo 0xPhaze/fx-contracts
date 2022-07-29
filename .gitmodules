@@ -1,12 +1,6 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/brockelmore/forge-std
-[submodule "lib/contracts"]
-	path = lib/fx-portal
-	url = https://github.com/fx-portal/contracts
-[submodule "lib/UDS"]
-	path = lib/UDS
-	url = https://github.com/0xphaze/UDS
 [submodule "lib/solmate"]
 	path = lib/solmate
 	url = https://github.com/rari-capital/solmate
@@ -16,3 +10,6 @@
 [submodule "lib/ERC721M"]
 	path = lib/ERC721M
 	url = https://github.com/0xPhaze/ERC721M
+[submodule "lib/UDS"]
+	path = lib/UDS
+	url = https://github.com/0xPhaze/UDS

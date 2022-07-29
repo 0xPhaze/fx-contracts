@@ -2,14 +2,14 @@
 pragma solidity ^0.8.0;
 
 // import {ERC20} from "solmate/tokens/ERC20.sol";
-import {ERC20UDS} from "UDS/ERC20UDS.sol";
-import {FxBaseRootTunnel} from "fx-portal/tunnel/FxBaseRootTunnel.sol";
+import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
+import {FxBaseRootTunnel} from "./fx-portal/tunnel/FxBaseRootTunnel.sol";
 
 // @note not UDS (FxBaseRoot)
 abstract contract FxERC20Root is FxBaseRootTunnel, ERC20UDS {
     // constructor(address _checkpointManager, address _fxRoot) FxBaseRootTunnel(_checkpointManager, _fxRoot) {}
 
-    /* ------------- Public ------------- */
+    /* ------------- public ------------- */
 
     function deposit(address to, uint256 amount) public {
         _burn(msg.sender, amount);
@@ -17,7 +17,7 @@ abstract contract FxERC20Root is FxBaseRootTunnel, ERC20UDS {
         _sendMessageToChild(abi.encode(to, amount));
     }
 
-    /* ------------- Internal ------------- */
+    /* ------------- internal ------------- */
 
     function _processMessageFromChild(bytes memory data) internal override {
         (address to, uint256 amount) = abi.decode(data, (address, uint256));
