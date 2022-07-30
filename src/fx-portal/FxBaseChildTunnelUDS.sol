@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {OwnableUDS} from "UDS/auth/OwnableUDS.sol";
 
-// ------------- Storage
+// ------------- storage
 
 // keccak256("diamond.storage.fx.base.child.tunnel") == 0x78fb77475679055b561a920ad9c59687e010e1c25efff4790e95ce6af61a09c9
 bytes32 constant DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL = 0x78fb77475679055b561a920ad9c59687e010e1c25efff4790e95ce6af61a09c9;
@@ -16,7 +16,7 @@ struct FxBaseChildTunnelDS {
     address fxRootTunnel;
 }
 
-// ------------- Error
+// ------------- error
 
 error CallerNotFxChild();
 error InvalidRootSender();
@@ -25,8 +25,6 @@ abstract contract FxBaseChildTunnelUDS is OwnableUDS {
     event MessageSent(bytes message);
 
     address private immutable fxChild;
-
-    /* ------------- init ------------- */
 
     constructor(address fxChild_) {
         fxChild = fxChild_;
