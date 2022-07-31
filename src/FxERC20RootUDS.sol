@@ -9,6 +9,8 @@ error InvalidSignature();
 abstract contract FxERC20Root is FxBaseRootTunnelUDS, ERC20UDS {
     bytes32 constant MINT_SIG = keccak256("mint(address,uint256)");
 
+    constructor(address checkpointManager, address fxRoot) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {}
+
     /* ------------- external ------------- */
 
     function lock(address to, uint256 amount) external virtual {

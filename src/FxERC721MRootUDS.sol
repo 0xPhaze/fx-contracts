@@ -13,6 +13,8 @@ abstract contract FxERC721MRootUDS is FxBaseRootTunnelUDS, ERC721M {
     bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
     bytes32 constant BURN_SIG = keccak256("burn(uint256[])");
 
+    constructor(address checkpointManager, address fxRoot) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {}
+
     /* ------------- virtual ------------- */
 
     function tokenURI(uint256 id) external view virtual override returns (string memory);

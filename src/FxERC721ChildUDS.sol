@@ -30,6 +30,8 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
 
     event StateDesync(address oldOwner, address newOwner, uint256 id);
 
+    constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
+
     /* ------------- internal ------------- */
 
     // @note doesn't need to validate sender, since this already happens in FxBase
@@ -49,6 +51,18 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
 
             burnIds(ids);
         } else revert InvalidSignature();
+    }
+
+    // @note does not validate owner
+    function _sendToRoot(uint256[] calldata ids) internal {
+        for (uint256 i; i < ids.length; ++i) {
+            // if (msg.sender != ownerOf(ids[i])) revert CallerNotOwner();
+
+            // address owner = erc721DS().ownerOf[ids[i]];
+            _burn(ids[i]);
+        }
+
+        _sendMessageToRoot(abi.encode(MINT_SIG, abi.encode(ids)));
     }
 
     /* ------------- private ------------- */
@@ -93,17 +107,5 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
 
             s().rootOwnerOf[id] = address(0);
         }
-    }
-
-    // @note not validated
-    function _sendToRoot(uint256[] calldata ids) internal {
-        for (uint256 i; i < ids.length; ++i) {
-            // if (msg.sender != ownerOf(ids[i])) revert CallerNotOwner();
-
-            // address owner = erc721DS().ownerOf[ids[i]];
-            _burn(ids[i]);
-        }
-
-        _sendMessageToRoot(abi.encode(MINT_SIG, abi.encode(ids)));
     }
 }
