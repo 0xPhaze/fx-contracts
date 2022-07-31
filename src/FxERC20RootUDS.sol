@@ -6,7 +6,7 @@ import {FxBaseRootTunnelUDS} from "./fx-portal/FxBaseRootTunnelUDS.sol";
 
 error InvalidSignature();
 
-abstract contract FxERC20Root is FxBaseRootTunnelUDS, ERC20UDS {
+abstract contract FxERC20RootUDS is FxBaseRootTunnelUDS, ERC20UDS {
     bytes32 constant MINT_SIG = keccak256("mint(address,uint256)");
 
     constructor(address checkpointManager, address fxRoot) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {}

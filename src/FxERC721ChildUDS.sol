@@ -10,12 +10,13 @@ import {FxBaseChildTunnelUDS} from "./fx-portal/FxBaseChildTunnelUDS.sol";
 // keccak256("diamond.storage.fx.erc721.child") == 0xd27a8eb27deabdc64caf45238ddcae36cb801813141fe6660d7723da1fb1287b
 bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD = 0xd27a8eb27deabdc64caf45238ddcae36cb801813141fe6660d7723da1fb1287b;
 
-struct FxERC721ChildDS {
-    mapping(uint256 => address) rootOwnerOf; // L1 owner; not really used other than for displaying in UI
-}
-
 function s() pure returns (FxERC721ChildDS storage diamondStorage) {
     assembly { diamondStorage.slot := DIAMOND_STORAGE_FX_ERC721_CHILD } // prettier-ignore
+}
+
+struct FxERC721ChildDS {
+    // L1 owner; not really used other than for display
+    mapping(uint256 => address) rootOwnerOf;
 }
 
 // ------------- error
@@ -31,6 +32,8 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
     event StateDesync(address oldOwner, address newOwner, uint256 id);
 
     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
+
+    function tokenURI(uint256 id) public view virtual override returns (string memory);
 
     /* ------------- internal ------------- */
 
