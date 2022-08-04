@@ -7,11 +7,11 @@ import {FxBaseChildTunnelUDS} from "./fx-portal/FxBaseChildTunnelUDS.sol";
 
 // ------------- storage
 
-// keccak256("diamond.storage.fx.erc721.child") == 0xd27a8eb27deabdc64caf45238ddcae36cb801813141fe6660d7723da1fb1287b
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD = 0xd27a8eb27deabdc64caf45238ddcae36cb801813141fe6660d7723da1fb1287b;
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD = keccak256("diamond.storage.fx.erc721.child");
 
 function s() pure returns (FxERC721ChildDS storage diamondStorage) {
-    assembly { diamondStorage.slot := DIAMOND_STORAGE_FX_ERC721_CHILD } // prettier-ignore
+    bytes32 slot = DIAMOND_STORAGE_FX_ERC721_CHILD;
+    assembly { diamondStorage.slot := slot } // prettier-ignore
 }
 
 struct FxERC721ChildDS {
@@ -57,11 +57,10 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
     }
 
     // @note does not validate owner
-    function _sendToRoot(uint256[] calldata ids) internal {
+    function _sendToRoot(address from, uint256[] calldata ids) internal {
         for (uint256 i; i < ids.length; ++i) {
-            // if (msg.sender != ownerOf(ids[i])) revert CallerNotOwner();
+            if (from != ownerOf(ids[i])) revert CallerNotOwner();
 
-            // address owner = erc721DS().ownerOf[ids[i]];
             _burn(ids[i]);
         }
 
