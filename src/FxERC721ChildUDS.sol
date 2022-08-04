@@ -33,6 +33,8 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
 
     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
 
+    /* ------------- virtual ------------- */
+
     function tokenURI(uint256 id) public view virtual override returns (string memory);
 
     /* ------------- internal ------------- */
@@ -57,7 +59,7 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
     }
 
     // @note does not validate owner
-    function _sendToRoot(address from, uint256[] calldata ids) internal {
+    function _sendToRoot(address from, uint256[] calldata ids) internal virtual {
         for (uint256 i; i < ids.length; ++i) {
             if (from != ownerOf(ids[i])) revert CallerNotOwner();
 
