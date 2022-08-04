@@ -66,10 +66,4 @@ abstract contract FxERC721SyncedChildUDS is FxERC721ChildUDS {
     ) public pure override {
         revert Disabled();
     }
-
-    /* ------------- internal ------------- */
-
-    function _sendToRoot(address, uint256[] calldata) internal pure override {
-        revert Disabled();
-    }
 }
