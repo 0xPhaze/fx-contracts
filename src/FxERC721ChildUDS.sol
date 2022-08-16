@@ -33,6 +33,12 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
 
     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
 
+    /* ------------- init ------------- */
+
+    function init() public virtual override initializer {
+        __Ownable_init();
+    }
+
     /* ------------- virtual ------------- */
 
     function tokenURI(uint256 id) public view virtual override returns (string memory);

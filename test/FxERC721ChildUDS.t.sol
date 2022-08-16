@@ -1,138 +1,107 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-// import "forge-std/Test.sol";
+import "forge-std/Test.sol";
 
-// import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
-// import {UUPSUpgrade} from "UDS/proxy/UUPSUpgrade.sol";
+import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
+import {UUPSUpgrade} from "UDS/proxy/UUPSUpgrade.sol";
 
-// import "ArrayUtils/ArrayUtils.sol";
+import "futils/futils.sol";
 
-// import "../src/FxERC721ChildUDS.sol";
+import "../src/FxERC721ChildUDS.sol";
 
-// contract Logic is UUPSUpgrade, FxERC721ChildUDS {
-//     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
+contract MockFxERC721MChild is UUPSUpgrade, FxERC721ChildUDS {
+    constructor(address fxChild) FxERC721ChildUDS(fxChild) {}
 
-//     function _authorizeUpgrade() internal override {}
+    function rootOwnerOf(uint256 id) public returns (address) {
+        return s().rootOwnerOf[id];
+    }
 
-//     function tokenURI(uint256) public pure override returns (string memory) {}
-// }
+    function _authorizeUpgrade() internal override {}
 
-// error NonexistentToken();
-// error TransferFromIncorrectOwner();
+    function tokenURI(uint256) public pure override returns (string memory) {}
+}
 
-// contract TestFxERC721SyncedChildUDS is Test {
-//     using ArrayUtils for *;
+error NonexistentToken();
+error TransferFromIncorrectOwner();
 
-//     address bob = address(0xb0b);
-//     address alice = address(0xbabe);
-//     address tester = address(this);
+contract TestFxERC721SyncedChildUDS is Test {
+    using futils for *;
 
-//     Logic proxy;
+    address bob = address(0xb0b);
+    address alice = address(0xbabe);
+    address tester = address(this);
 
-//     function setUp() public {
-//         Logic logic = new Logic(bob);
-//         proxy = Logic(address(new ERC1967Proxy(address(logic), "")));
+    MockFxERC721MChild proxy;
 
-//         proxy.setFxRootTunnel(bob);
-//     }
+    function setUp() public {
+        MockFxERC721MChild logic = new MockFxERC721MChild(bob);
 
-//     /* ------------- Disabled() ------------- */
+        bytes memory initData = abi.encodePacked(FxERC721ChildUDS.init.selector);
 
-//     function test_disabled() public {
-//         vm.expectRevert(Disabled.selector);
-//         proxy.approve(alice, 15);
+        proxy = MockFxERC721MChild(address(new ERC1967Proxy(address(logic), initData)));
 
-//         // vm.expectRevert(Disabled.selector);
-//         // proxy.setApprovalForAll(alice, true);
+        proxy.setFxRootTunnel(bob);
+    }
 
-//         // vm.expectRevert(Disabled.selector);
-//         // proxy.transferFrom(alice, bob, 15);
+    /* ------------- processMessageFromRoot() ------------- */
 
-//         // vm.expectRevert(Disabled.selector);
-//         // proxy.safeTransferFrom(alice, bob, 15);
+    bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
+    bytes32 constant BURN_SIG = keccak256("burn(uint256[])");
 
-//         // vm.expectRevert(Disabled.selector);
-//         // proxy.safeTransferFrom(alice, bob, 15, "");
+    function test_processMessageFromRoot() public {
+        bytes memory mintMessage = abi.encode(MINT_SIG, abi.encode(alice, [42].toMemory()));
+        bytes memory burnMessage = abi.encode(BURN_SIG, abi.encode([42].toMemory()));
 
-//         // vm.expectRevert(Disabled.selector);
-//         // proxy.permit(alice, bob, 15, 1, 0x0, 0x0);
-//     }
+        // mint
+        vm.prank(bob);
+        proxy.processMessageFromRoot(1, bob, mintMessage);
 
-//     /* ------------- processMessageFromRoot() ------------- */
+        assertEq(proxy.rootOwnerOf(42), alice);
+        assertEq(proxy.ownerOf(42), alice);
 
-//     function test_processMessageFromRoot() public {
-//         // mint
-//         vm.prank(bob);
-//         proxy.processMessageFromRoot(uint256(1), bob, abi.encode(true, alice, [42].toMemory()));
+        // burn
+        vm.prank(bob);
+        proxy.processMessageFromRoot(1, bob, burnMessage);
 
-//         assertEq(proxy.rootOwnerOf(42), alice);
-//         assertEq(proxy.ownerOf(42), alice);
+        assertEq(proxy.rootOwnerOf(42), address(0));
 
-//         // burn
-//         vm.prank(bob);
-//         proxy.processMessageFromRoot(uint256(1), bob, abi.encode(false, alice, [42].toMemory()));
-//         assertEq(proxy.rootOwnerOf(42), address(0));
-//         vm.expectRevert(NonexistentToken.selector);
-//         proxy.ownerOf(42);
+        vm.expectRevert(NonexistentToken.selector);
+        proxy.ownerOf(42);
 
-//         // re-mint
-//         vm.prank(bob);
-//         proxy.processMessageFromRoot(uint256(1), bob, abi.encode(true, alice, [42].toMemory()));
-//         assertEq(proxy.rootOwnerOf(42), alice);
-//         assertEq(proxy.ownerOf(42), alice);
-//     }
+        // re-mint
+        vm.prank(bob);
+        proxy.processMessageFromRoot(1, bob, mintMessage);
 
-//     event StateDesync(address oldOwner, address newOwner, uint256 tokenId);
+        assertEq(proxy.rootOwnerOf(42), alice);
+        assertEq(proxy.ownerOf(42), alice);
+    }
 
-//     function test_processMessageFromRoot_desync() public {
-//         // mint
-//         vm.prank(bob);
-//         proxy.processMessageFromRoot(uint256(1), bob, abi.encode(true, alice, [42].toMemory()));
+    event StateDesync(address oldOwner, address newOwner, uint256 tokenId);
 
-//         assertEq(proxy.rootOwnerOf(42), alice);
-//         assertEq(proxy.ownerOf(42), alice);
+    function test_processMessageFromRoot_desync() public {
+        bytes memory mintMessage = abi.encode(MINT_SIG, abi.encode(alice, [42].toMemory()));
+        bytes memory burnMessage = abi.encode(BURN_SIG, abi.encode([42].toMemory()));
 
-//         // re-mint
-//         vm.expectEmit(false, false, false, true);
-//         emit StateDesync(alice, alice, 42);
+        // burn de-sync
+        vm.expectEmit(false, false, false, true);
+        emit StateDesync(address(0), address(0), 42);
 
-//         vm.prank(bob);
-//         proxy.processMessageFromRoot(uint256(1), bob, abi.encode(true, alice, [42].toMemory()));
+        vm.prank(bob);
+        proxy.processMessageFromRoot(1, bob, burnMessage);
 
-//         assertEq(proxy.rootOwnerOf(42), alice);
-//         assertEq(proxy.ownerOf(42), alice);
-//     }
+        // mint
+        vm.prank(bob);
+        proxy.processMessageFromRoot(1, bob, mintMessage);
 
-//     /* ------------- delegateOwnership() ------------- */
+        // re-mint de-sync
+        vm.expectEmit(false, false, false, true);
+        emit StateDesync(alice, alice, 42);
 
-//     function test_delegateOwnership() public {
-//         // mint for alice
-//         vm.prank(bob);
-//         proxy.processMessageFromRoot(uint256(1), bob, abi.encode(true, alice, [42].toMemory()));
+        vm.prank(bob);
+        proxy.processMessageFromRoot(1, bob, mintMessage);
 
-//         vm.expectRevert(CallerNotRootOwnerNorDelegate.selector);
-//         proxy.delegateOwnership(bob, 42);
-
-//         vm.prank(alice);
-//         proxy.delegateOwnership(bob, 42);
-
-//         assertEq(proxy.ownerOf(42), bob);
-
-//         vm.prank(bob);
-//         proxy.delegateOwnership(tester, 42);
-
-//         assertEq(proxy.ownerOf(42), tester);
-
-//         vm.prank(alice);
-//         proxy.delegateOwnership(bob, 42);
-//     }
-
-//     // /* ------------- transferOwnership() ------------- */
-
-//     // function test_transferOwnership() public {
-//     //     Logic(proxy).transferOwnership(alice);
-
-//     //     assertEq(proxy.owner(), alice);
-//     // }
-// }
+        assertEq(proxy.rootOwnerOf(42), alice);
+        assertEq(proxy.ownerOf(42), alice);
+    }
+}

@@ -29,11 +29,11 @@ interface ICheckpointManager {
 
 // ------------- storage
 
-// keccak256("diamond.storage.fx.base.root.tunnel") == 0x3849b0d9a476107bbeb9ff6ae9ec519d63a65bac06efa495b84a43dbacfd9484
-bytes32 constant DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL = 0x3849b0d9a476107bbeb9ff6ae9ec519d63a65bac06efa495b84a43dbacfd9484;
+bytes32 constant DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL = keccak256("diamond.storage.fx.base.root.tunnel");
 
 function s() pure returns (FxBaseRootTunnelDS storage diamondStorage) {
-    assembly { diamondStorage.slot := DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL } // prettier-ignore
+    bytes32 slot = DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL;
+    assembly { diamondStorage.slot := slot } // prettier-ignore
 }
 
 struct FxBaseRootTunnelDS {
@@ -59,6 +59,12 @@ abstract contract FxBaseRootTunnelUDS is OwnableUDS {
     constructor(address checkpointManager_, address fxRoot_) {
         checkpointManager = ICheckpointManager(checkpointManager_);
         fxRoot = IFxStateSender(fxRoot_);
+    }
+
+    /* ------------- init ------------- */
+
+    function init() public virtual initializer {
+        __Ownable_init();
     }
 
     /* ------------- view ------------- */
@@ -150,6 +156,7 @@ abstract contract FxBaseRootTunnelUDS is OwnableUDS {
 
         // received message data
         bytes memory message = abi.decode(log.getData(), (bytes)); // event decodes params again, so decoding bytes to get message
+
         return message;
     }
 }

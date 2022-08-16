@@ -5,11 +5,11 @@ import {OwnableUDS} from "UDS/auth/OwnableUDS.sol";
 
 // ------------- storage
 
-// keccak256("diamond.storage.fx.base.child.tunnel") == 0x78fb77475679055b561a920ad9c59687e010e1c25efff4790e95ce6af61a09c9
-bytes32 constant DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL = 0x78fb77475679055b561a920ad9c59687e010e1c25efff4790e95ce6af61a09c9;
+bytes32 constant DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL = keccak256("diamond.storage.fx.base.child.tunnel");
 
 function s() pure returns (FxBaseChildTunnelDS storage diamondStorage) {
-    assembly { diamondStorage.slot := DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL } // prettier-ignore
+    bytes32 slot = DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL;
+    assembly { diamondStorage.slot := slot } // prettier-ignore
 }
 
 struct FxBaseChildTunnelDS {
@@ -28,6 +28,12 @@ abstract contract FxBaseChildTunnelUDS is OwnableUDS {
 
     constructor(address fxChild_) {
         fxChild = fxChild_;
+    }
+
+    /* ------------- init ------------- */
+
+    function init() public virtual initializer {
+        __Ownable_init();
     }
 
     /* ------------- restricted ------------- */

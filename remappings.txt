@@ -1,4 +1,4 @@
-ArrayUtils/=lib/ArrayUtils/src/
+futils/=lib/futils/src/
 ERC721M/=lib/ERC721M/src/
 UDS/=lib/UDS/src/
 forge-std/=lib/forge-std/src/
