@@ -46,12 +46,12 @@ contract TestFxERC721SyncedChildUDS is Test {
 
     /* ------------- processMessageFromRoot() ------------- */
 
-    bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
-    bytes32 constant BURN_SIG = keccak256("burn(uint256[])");
+    bytes32 constant REGISTER_SIG = keccak256("register(address,uint256[])");
+    bytes32 constant DEREGISTER_SIG = keccak256("deregister(uint256[])");
 
     function test_processMessageFromRoot() public {
-        bytes memory mintMessage = abi.encode(MINT_SIG, abi.encode(alice, [42].toMemory()));
-        bytes memory burnMessage = abi.encode(BURN_SIG, abi.encode([42].toMemory()));
+        bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, [42].toMemory()));
+        bytes memory burnMessage = abi.encode(DEREGISTER_SIG, abi.encode([42].toMemory()));
 
         // mint
         vm.prank(bob);
@@ -80,8 +80,8 @@ contract TestFxERC721SyncedChildUDS is Test {
     event StateDesync(address oldOwner, address newOwner, uint256 tokenId);
 
     function test_processMessageFromRoot_desync() public {
-        bytes memory mintMessage = abi.encode(MINT_SIG, abi.encode(alice, [42].toMemory()));
-        bytes memory burnMessage = abi.encode(BURN_SIG, abi.encode([42].toMemory()));
+        bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, [42].toMemory()));
+        bytes memory burnMessage = abi.encode(DEREGISTER_SIG, abi.encode([42].toMemory()));
 
         // burn de-sync
         vm.expectEmit(false, false, false, true);

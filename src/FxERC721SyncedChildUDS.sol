@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ERC721UDS} from "UDS/tokens/ERC721UDS.sol";
-import {FxERC721ChildUDS} from "./FxERC721ChildUDS.sol";
+import {FxERC721ChildTunnelUDS, s as tunnelDS} from "./fx-portal/FxERC721ChildTunnelUDS.sol";
 
 // ------------- error
 
@@ -10,8 +10,8 @@ error Disabled();
 error CallerNotOwner();
 error InvalidSignature();
 
-abstract contract FxERC721SyncedChildUDS is FxERC721ChildUDS {
-    constructor(address fxChild) FxERC721ChildUDS(fxChild) {}
+abstract contract FxERC721SyncedChildUDS is FxERC721ChildTunnelUDS, ERC721UDS {
+    constructor(address fxChild) FxERC721ChildTunnelUDS(fxChild) {}
 
     /* ------------- virtual ------------- */
 
@@ -19,6 +19,11 @@ abstract contract FxERC721SyncedChildUDS is FxERC721ChildUDS {
 
     /* ------------- public ------------- */
 
+    function ownerOf(uint256 id) public view override returns (address) {
+        return tunnelDS().rootOwnerOf[id];
+    }
+
+    // TODO won't work
     function delegateOwnership(address to, uint256 id) public {
         ERC721UDS.transferFrom(msg.sender, to, id);
     }

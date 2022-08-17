@@ -26,8 +26,8 @@ error CallerNotOwner();
 error InvalidSignature();
 
 abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
-    bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
-    bytes32 constant BURN_SIG = keccak256("burn(uint256[])");
+    bytes32 constant REGISTER_SIG = keccak256("register(address,uint256[])");
+    bytes32 constant DEREGISTER_SIG = keccak256("deregister(uint256[])");
 
     event StateDesync(address oldOwner, address newOwner, uint256 id);
 
@@ -53,11 +53,11 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
     ) internal virtual override {
         (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
 
-        if (sig == MINT_SIG) {
+        if (sig == REGISTER_SIG) {
             (address to, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 
             mintIds(to, ids);
-        } else if (sig == BURN_SIG) {
+        } else if (sig == DEREGISTER_SIG) {
             uint256[] memory ids = abi.decode(data, (uint256[]));
 
             burnIds(ids);
@@ -72,7 +72,7 @@ abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
             _burn(ids[i]);
         }
 
-        _sendMessageToRoot(abi.encode(MINT_SIG, abi.encode(ids)));
+        _sendMessageToRoot(abi.encode(REGISTER_SIG, abi.encode(ids)));
     }
 
     /* ------------- private ------------- */

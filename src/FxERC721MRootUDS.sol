@@ -2,18 +2,21 @@
 pragma solidity ^0.8.0;
 
 import {ERC721M} from "ERC721M/ERC721M.sol";
-import {FxBaseRootTunnelUDS} from "./fx-portal/FxBaseRootTunnelUDS.sol";
+import {FxERC721RootTunnelUDS} from "./fx-portal/FxERC721RootTunnelUDS.sol";
 
 error Disabled();
 error InvalidSignature();
 
 /// @title ERC721M FxPortal extension
 /// @author phaze (https://github.com/0xPhaze/ERC721M)
-abstract contract FxERC721MRootUDS is FxBaseRootTunnelUDS, ERC721M {
-    bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
-    bytes32 constant BURN_SIG = keccak256("burn(uint256[])");
+abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
+    constructor(address checkpointManager, address fxRoot) FxERC721RootTunnelUDS(checkpointManager, fxRoot) {}
 
-    constructor(address checkpointManager, address fxRoot) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {}
+    /* ------------- init ------------- */
+
+    function init() public virtual override initializer {
+        __Ownable_init();
+    }
 
     /* ------------- virtual ------------- */
 
@@ -32,7 +35,7 @@ abstract contract FxERC721MRootUDS is FxBaseRootTunnelUDS, ERC721M {
             for (uint256 i; i < quantity; ++i) ids[i] = startId + i;
         }
 
-        _sendMessageToChild(abi.encode(MINT_SIG, abi.encode(to, ids)));
+        _registerWithChild(to, ids);
     }
 
     function _lockAndTransmit(address from, uint256[] calldata ids) internal virtual {
@@ -40,7 +43,7 @@ abstract contract FxERC721MRootUDS is FxBaseRootTunnelUDS, ERC721M {
             for (uint256 i; i < ids.length; ++i) _lock(from, ids[i]);
         }
 
-        _sendMessageToChild(abi.encode(MINT_SIG, abi.encode(from, ids)));
+        _registerWithChild(from, ids);
     }
 
     // @notice using `_unlockAndTransmit` is simple and easy
@@ -52,8 +55,10 @@ abstract contract FxERC721MRootUDS is FxBaseRootTunnelUDS, ERC721M {
             for (uint256 i; i < ids.length; ++i) _unlock(from, ids[i]);
         }
 
-        _sendMessageToChild(abi.encode(BURN_SIG, abi.encode(ids)));
+        _deregisterWithChild(ids);
     }
+
+    bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
 
     // @notice using `_unlockWithProof` is the 'correct' way for transmitting messages L2 -> L1
     // validate ERC721 burn on L2 first, then unlock on L1 with tx inclusion proof
@@ -67,10 +72,10 @@ abstract contract FxERC721MRootUDS is FxBaseRootTunnelUDS, ERC721M {
 
         (address from, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 
-        uint256 length = ids.length;
+        uint256 idsLength = ids.length;
 
         unchecked {
-            for (uint256 i; i < length; ++i) _unlock(from, ids[i]);
+            for (uint256 i; i < idsLength; ++i) _unlock(from, ids[i]);
         }
     }
 }
