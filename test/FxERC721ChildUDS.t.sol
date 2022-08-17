@@ -46,8 +46,8 @@ contract TestFxERC721SyncedChildUDS is Test {
 
     /* ------------- processMessageFromRoot() ------------- */
 
-    bytes32 constant REGISTER_SIG = keccak256("register(address,uint256[])");
-    bytes32 constant DEREGISTER_SIG = keccak256("deregister(uint256[])");
+    bytes32 constant REGISTER_SIG = keccak256("registerIds(address,uint256[])");
+    bytes32 constant DEREGISTER_SIG = keccak256("deregisterIds(uint256[])");
 
     function test_processMessageFromRoot() public {
         bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, [42].toMemory()));

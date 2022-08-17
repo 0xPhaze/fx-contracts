@@ -9,8 +9,8 @@ error InvalidSignature();
 /// @title ERC721 FxTunnel
 /// @author phaze (https://github.com/0xPhaze)
 abstract contract FxERC721RootTunnelUDS is FxBaseRootTunnelUDS {
-    bytes32 constant REGISTER_SIG = keccak256("register(address,uint256[])");
-    bytes32 constant DEREGISTER_SIG = keccak256("deregister(uint256[])");
+    bytes32 constant REGISTER_SIG = keccak256("registerIds(address,uint256[])");
+    bytes32 constant DEREGISTER_SIG = keccak256("deregisterIds(uint256[])");
 
     constructor(address checkpointManager, address fxRoot) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {}
 

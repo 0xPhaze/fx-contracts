@@ -26,8 +26,8 @@ error CallerNotOwner();
 error InvalidSignature();
 
 abstract contract FxERC721ChildUDS is ERC721UDS, FxBaseChildTunnelUDS {
-    bytes32 constant REGISTER_SIG = keccak256("register(address,uint256[])");
-    bytes32 constant DEREGISTER_SIG = keccak256("deregister(uint256[])");
+    bytes32 constant REGISTER_SIG = keccak256("registerIds(address,uint256[])");
+    bytes32 constant DEREGISTER_SIG = keccak256("deregisterIds(uint256[])");
 
     event StateDesync(address oldOwner, address newOwner, uint256 id);
 
