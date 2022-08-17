@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {FxBaseChildTunnelUDS} from "./FxBaseChildTunnelUDS.sol";
+import {FxBaseChildTunnelUDS} from "./base/FxBaseChildTunnelUDS.sol";
+import {REGISTER_SIG, DEREGISTER_SIG} from "./FxERC721RootTunnelUDS.sol";
 
 // ------------- storage
 
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_REGISTRY = keccak256("diamond.storage.fx.erc721.child.registry");
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL = keccak256("diamond.storage.fx.erc721.child.tunnel");
 
 function s() pure returns (FxERC721ChildRegistryDS storage diamondStorage) {
-    bytes32 slot = DIAMOND_STORAGE_FX_ERC721_CHILD_REGISTRY;
+    bytes32 slot = DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL;
     assembly { diamondStorage.slot := slot } // prettier-ignore
 }
 
@@ -22,19 +23,14 @@ error Disabled();
 error InvalidRootOwner();
 error InvalidSignature();
 
-contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
-    bytes32 constant REGISTER_SIG = keccak256("registerIds(address,uint256[])");
-    bytes32 constant DEREGISTER_SIG = keccak256("deregisterIds(uint256[])");
-
+abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
     event StateDesync(address oldOwner, address newOwner, uint256 id);
 
     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
 
-    /* ------------- init ------------- */
+    /* ------------- virtual ------------- */
 
-    function init() public virtual override initializer {
-        __Ownable_init();
-    }
+    function _authorizeTunnelController() internal virtual override;
 
     /* ------------- internal ------------- */
 
@@ -59,20 +55,20 @@ contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
         }
     }
 
-    function _sendToRoot(address from, uint256[] calldata ids) internal virtual {
-        for (uint256 i; i < ids.length; ++i) {
-            uint256 id = ids[i];
-            address rootOwner = s().rootOwnerOf[id];
+    // function _sendToRoot(address from, uint256[] calldata ids) internal virtual {
+    //     for (uint256 i; i < ids.length; ++i) {
+    //         uint256 id = ids[i];
+    //         address rootOwner = s().rootOwnerOf[id];
 
-            if (from != rootOwner) revert InvalidRootOwner();
+    //         if (from != rootOwner) revert InvalidRootOwner();
 
-            delete s().rootOwnerOf[id];
+    //         delete s().rootOwnerOf[id];
 
-            _afterIdDeregistered(from, id);
-        }
+    //         _afterIdDeregistered(from, id);
+    //     }
 
-        _sendMessageToRoot(abi.encode(REGISTER_SIG, abi.encode(ids)));
-    }
+    //     _sendMessageToRoot(abi.encode(MINT_SIG, abi.encode(ids)));
+    // }
 
     /* ------------- hooks ------------- */
 

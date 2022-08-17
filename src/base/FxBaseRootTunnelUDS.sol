@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Merkle} from "./lib/Merkle.sol";
-import {RLPReader} from "./lib/RLPReader.sol";
-import {ExitPayloadReader} from "./lib/ExitPayloadReader.sol";
-import {MerklePatriciaProof} from "./lib/MerklePatriciaProof.sol";
-
-import {OwnableUDS} from "UDS/auth/OwnableUDS.sol";
+import {Merkle} from "../lib/Merkle.sol";
+import {RLPReader} from "../lib/RLPReader.sol";
+import {ExitPayloadReader} from "../lib/ExitPayloadReader.sol";
+import {MerklePatriciaProof} from "../lib/MerklePatriciaProof.sol";
 
 // ------------- interfaces
 
@@ -41,7 +39,16 @@ struct FxBaseRootTunnelDS {
     mapping(bytes32 => bool) processedExits;
 }
 
-abstract contract FxBaseRootTunnelUDS is OwnableUDS {
+// ------------- errors
+
+error FxChildUnset();
+error InvalidHeader();
+error InvalidSignature();
+error InvalidReceiptProof();
+error InvalidFxChildTunnel();
+error ExitAlreadyProcessed();
+
+abstract contract FxBaseRootTunnelUDS {
     using RLPReader for RLPReader.RLPItem;
     using Merkle for bytes32;
     using ExitPayloadReader for bytes;
@@ -61,11 +68,9 @@ abstract contract FxBaseRootTunnelUDS is OwnableUDS {
         fxRoot = IFxStateSender(fxRoot_);
     }
 
-    /* ------------- init ------------- */
+    /* ------------- virtual ------------- */
 
-    function init() public virtual initializer {
-        __Ownable_init();
-    }
+    function _authorizeTunnelController() internal virtual;
 
     /* ------------- view ------------- */
 
@@ -77,13 +82,17 @@ abstract contract FxBaseRootTunnelUDS is OwnableUDS {
         return s().processedExits[exitHash];
     }
 
-    function setFxChildTunnel(address _fxChildTunnel) public virtual onlyOwner {
+    function setFxChildTunnel(address _fxChildTunnel) public virtual {
+        _authorizeTunnelController();
+
         s().fxChildTunnel = _fxChildTunnel;
     }
 
     /* ------------- internal ------------- */
 
     function _sendMessageToChild(bytes memory message) internal {
+        if (s().fxChildTunnel == address(0)) revert FxChildUnset();
+
         fxRoot.sendMessageToChild(s().fxChildTunnel, message);
     }
 
@@ -104,6 +113,10 @@ abstract contract FxBaseRootTunnelUDS is OwnableUDS {
      *  9 - receiptLogIndex - Log Index to read from the receipt
      */
     function _validateAndExtractMessage(bytes memory proofData) internal returns (bytes memory) {
+        address childTunnel = s().fxChildTunnel;
+
+        if (childTunnel == address(0)) revert FxChildUnset();
+
         ExitPayloadReader.ExitPayload memory payload = proofData.toExitPayload();
 
         bytes memory branchMaskBytes = payload.getBranchMaskAsBytes();
@@ -120,21 +133,21 @@ abstract contract FxBaseRootTunnelUDS is OwnableUDS {
                 payload.getReceiptLogIndex()
             )
         );
-        require(s().processedExits[exitHash] == false, "FxRootTunnel: EXIT_ALREADY_PROCESSED");
+
+        if (s().processedExits[exitHash]) revert ExitAlreadyProcessed();
+
         s().processedExits[exitHash] = true;
 
         ExitPayloadReader.Receipt memory receipt = payload.getReceipt();
         ExitPayloadReader.Log memory log = receipt.getLog();
 
         // check child tunnel
-        require(s().fxChildTunnel == log.getEmitter(), "FxRootTunnel: INVALID_FX_CHILD_TUNNEL");
+        if (childTunnel != log.getEmitter()) revert InvalidFxChildTunnel();
 
         bytes32 receiptRoot = payload.getReceiptRoot();
         // verify receipt inclusion
-        require(
-            MerklePatriciaProof.verify(receipt.toBytes(), branchMaskBytes, payload.getReceiptProof(), receiptRoot),
-            "FxRootTunnel: INVALID_RECEIPT_PROOF"
-        );
+        if (!MerklePatriciaProof.verify(receipt.toBytes(), branchMaskBytes, payload.getReceiptProof(), receiptRoot))
+            revert InvalidReceiptProof();
 
         (bytes32 headerRoot, uint256 startBlock, , , ) = checkpointManager.headerBlocks(payload.getHeaderNumber());
 
@@ -142,17 +155,12 @@ abstract contract FxBaseRootTunnelUDS is OwnableUDS {
             abi.encodePacked(blockNumber, payload.getBlockTime(), payload.getTxRoot(), receiptRoot)
         );
 
-        require(
-            leaf.checkMembership(blockNumber - startBlock, headerRoot, payload.getBlockProof()),
-            "FxRootTunnel: INVALID_HEADER"
-        );
+        if (!leaf.checkMembership(blockNumber - startBlock, headerRoot, payload.getBlockProof()))
+            revert InvalidHeader();
 
         ExitPayloadReader.LogTopics memory topics = log.getTopics();
 
-        require(
-            bytes32(topics.getField(0).toUint()) == SEND_MESSAGE_EVENT_SIG, // topic0 is event sig
-            "FxRootTunnel: INVALID_SIGNATURE"
-        );
+        if (bytes32(topics.getField(0).toUint()) != SEND_MESSAGE_EVENT_SIG) revert InvalidSignature();
 
         // received message data
         bytes memory message = abi.decode(log.getData(), (bytes)); // event decodes params again, so decoding bytes to get message

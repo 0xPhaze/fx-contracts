@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
-import {FxBaseChildTunnelUDS} from "./fx-portal/FxBaseChildTunnelUDS.sol";
+import {FxBaseChildTunnelUDS} from "./base/FxBaseChildTunnelUDS.sol";
 
 error InvalidSignature();
 

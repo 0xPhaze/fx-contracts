@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ERC721UDS} from "UDS/tokens/ERC721UDS.sol";
-import {FxERC721ChildTunnelUDS, s as tunnelDS} from "./fx-portal/FxERC721ChildTunnelUDS.sol";
+import {FxERC721ChildTunnelUDS, s as tunnelDS} from "../FxERC721ChildTunnelUDS.sol";
 
 // ------------- error
 

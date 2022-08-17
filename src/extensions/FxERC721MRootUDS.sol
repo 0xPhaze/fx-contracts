@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ERC721M} from "ERC721M/ERC721M.sol";
-import {FxERC721RootTunnelUDS} from "./fx-portal/FxERC721RootTunnelUDS.sol";
+import {FxERC721RootTunnelUDS} from "../FxERC721RootTunnelUDS.sol";
 
 error Disabled();
 error InvalidSignature();
@@ -12,15 +12,11 @@ error InvalidSignature();
 abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
     constructor(address checkpointManager, address fxRoot) FxERC721RootTunnelUDS(checkpointManager, fxRoot) {}
 
-    /* ------------- init ------------- */
-
-    function init() public virtual override initializer {
-        __Ownable_init();
-    }
-
     /* ------------- virtual ------------- */
 
     function tokenURI(uint256 id) external view virtual override returns (string memory);
+
+    function _authorizeTunnelController() internal virtual override;
 
     /* ------------- internal ------------- */
 
@@ -35,7 +31,7 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
             for (uint256 i; i < quantity; ++i) ids[i] = startId + i;
         }
 
-        _registerWithChild(to, ids);
+        _registerIdsWithChild(to, ids);
     }
 
     function _lockAndTransmit(address from, uint256[] calldata ids) internal virtual {
@@ -43,7 +39,7 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
             for (uint256 i; i < ids.length; ++i) _lock(from, ids[i]);
         }
 
-        _registerWithChild(from, ids);
+        _registerIdsWithChild(from, ids);
     }
 
     // @notice using `_unlockAndTransmit` is simple and easy
@@ -55,27 +51,27 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
             for (uint256 i; i < ids.length; ++i) _unlock(from, ids[i]);
         }
 
-        _deregisterWithChild(ids);
+        _deregisterIdsWithChild(ids);
     }
 
-    bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
+    // bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
 
-    // @notice using `_unlockWithProof` is the 'correct' way for transmitting messages L2 -> L1
-    // validate ERC721 burn on L2 first, then unlock on L1 with tx inclusion proof
-    // NFTs can be traded/sold on L2 if adapted to transfer to a new owner
-    function _unlockWithProof(bytes calldata proofData) internal virtual {
-        bytes memory message = _validateAndExtractMessage(proofData);
+    // // @notice using `_unlockWithProof` is the 'correct' way for transmitting messages L2 -> L1
+    // // validate ERC721 burn on L2 first, then unlock on L1 with tx inclusion proof
+    // // NFTs can be traded/sold on L2 if adapted to transfer to a new owner
+    // function _unlockWithProof(bytes calldata proofData) internal virtual {
+    //     bytes memory message = _validateAndExtractMessage(proofData);
 
-        (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
+    //     (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
 
-        if (sig != MINT_SIG) revert InvalidSignature();
+    //     if (sig != MINT_SIG) revert InvalidSignature();
 
-        (address from, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
+    //     (address from, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 
-        uint256 idsLength = ids.length;
+    //     uint256 idsLength = ids.length;
 
-        unchecked {
-            for (uint256 i; i < idsLength; ++i) _unlock(from, ids[i]);
-        }
-    }
+    //     unchecked {
+    //         for (uint256 i; i < idsLength; ++i) _unlock(from, ids[i]);
+    //     }
+    // }
 }

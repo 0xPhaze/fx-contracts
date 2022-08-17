@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {OwnableUDS} from "UDS/auth/OwnableUDS.sol";
-
 // ------------- storage
 
 bytes32 constant DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL = keccak256("diamond.storage.fx.base.child.tunnel");
@@ -21,7 +19,7 @@ struct FxBaseChildTunnelDS {
 error CallerNotFxChild();
 error InvalidRootSender();
 
-abstract contract FxBaseChildTunnelUDS is OwnableUDS {
+abstract contract FxBaseChildTunnelUDS {
     event MessageSent(bytes message);
 
     address private immutable fxChild;
@@ -30,13 +28,17 @@ abstract contract FxBaseChildTunnelUDS is OwnableUDS {
         fxChild = fxChild_;
     }
 
-    /* ------------- init ------------- */
+    /* ------------- virtual ------------- */
 
-    function init() public virtual initializer {
-        __Ownable_init();
-    }
+    function _authorizeTunnelController() internal virtual;
 
     /* ------------- restricted ------------- */
+
+    function setFxRootTunnel(address _fxRootTunnel) external {
+        _authorizeTunnelController();
+
+        s().fxRootTunnel = _fxRootTunnel;
+    }
 
     function processMessageFromRoot(
         uint256 stateId,
@@ -44,15 +46,9 @@ abstract contract FxBaseChildTunnelUDS is OwnableUDS {
         bytes calldata data
     ) external {
         if (msg.sender != fxChild) revert CallerNotFxChild();
-        if (rootMessageSender != s().fxRootTunnel) revert InvalidRootSender();
+        if (rootMessageSender == address(0) || rootMessageSender != s().fxRootTunnel) revert InvalidRootSender();
 
         _processMessageFromRoot(stateId, rootMessageSender, data);
-    }
-
-    /* ------------- owner ------------- */
-
-    function setFxRootTunnel(address _fxRootTunnel) external onlyOwner {
-        s().fxRootTunnel = _fxRootTunnel;
     }
 
     /* ------------- internal ------------- */

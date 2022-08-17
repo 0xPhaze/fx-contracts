@@ -1,6 +1,7 @@
-futils/=lib/futils/src/
 ERC721M/=lib/ERC721M/src/
 UDS/=lib/UDS/src/
+ds-test/=lib/ERC721M/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
+futils/=lib/futils/src/
+fx-portal/=lib/ERC721M/lib/fx-portal/contracts/
 solmate/=lib/solmate/src/
-fx-contracts/=src/

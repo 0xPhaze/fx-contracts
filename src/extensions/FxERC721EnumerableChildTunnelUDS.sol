@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {FxERC721ChildTunnelUDS} from "./FxERC721ChildTunnelUDS.sol";
-import {LibEnumerableSet, UintSet} from "./lib/LibEnumerableSet.sol";
+import {FxERC721ChildTunnelUDS} from "../FxERC721ChildTunnelUDS.sol";
+import {LibEnumerableSet, UintSet} from "../lib/LibEnumerableSet.sol";
 
 // ------------- storage
 
@@ -17,16 +17,14 @@ struct FxERC721EnumerableChildDS {
     mapping(address => UintSet) ownedIds;
 }
 
-contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
+abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
     using LibEnumerableSet for UintSet;
 
     constructor(address fxChild) FxERC721ChildTunnelUDS(fxChild) {}
 
-    /* ------------- init ------------- */
+    /* ------------- virtual ------------- */
 
-    function init() public virtual override initializer {
-        __Ownable_init();
-    }
+    function _authorizeTunnelController() internal virtual override;
 
     /* ------------- public ------------- */
 
