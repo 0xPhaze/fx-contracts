@@ -31,7 +31,7 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
             for (uint256 i; i < quantity; ++i) ids[i] = startId + i;
         }
 
-        _registerIdsWithChild(to, ids);
+        _registerIdsWithChild(address(this), to, ids);
     }
 
     function _lockAndTransmit(address from, uint256[] calldata ids) internal virtual {
@@ -39,7 +39,7 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
             for (uint256 i; i < ids.length; ++i) _lock(from, ids[i]);
         }
 
-        _registerIdsWithChild(from, ids);
+        _registerIdsWithChild(address(this), from, ids);
     }
 
     // @notice using `_unlockAndTransmit` is simple and easy
@@ -51,7 +51,7 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
             for (uint256 i; i < ids.length; ++i) _unlock(from, ids[i]);
         }
 
-        _deregisterIdsWithChild(ids);
+        _deregisterIdsWithChild(address(this), ids);
     }
 
     // bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");

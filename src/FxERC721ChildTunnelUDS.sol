@@ -14,7 +14,7 @@ function s() pure returns (FxERC721ChildRegistryDS storage diamondStorage) {
 }
 
 struct FxERC721ChildRegistryDS {
-    mapping(uint256 => address) rootOwnerOf;
+    mapping(address => mapping(uint256 => address)) rootOwnerOf;
 }
 
 // ------------- error
@@ -23,6 +23,8 @@ error Disabled();
 error InvalidRootOwner();
 error InvalidSignature();
 
+/// @title ERC721 FxChildTunnel
+/// @author phaze (https://github.com/0xPhaze/fx-contracts)
 abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
     event StateDesync(address oldOwner, address newOwner, uint256 id);
 
@@ -43,13 +45,13 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
         (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
 
         if (sig == REGISTER_SIG) {
-            (address to, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
+            (address collection, address to, uint256[] memory ids) = abi.decode(data, (address, address, uint256[]));
 
-            registerIds(to, ids);
+            registerIds(collection, to, ids);
         } else if (sig == DEREGISTER_SIG) {
-            uint256[] memory ids = abi.decode(data, (uint256[]));
+            (address collection, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 
-            deregisterIds(ids);
+            deregisterIds(collection, ids);
         } else {
             revert InvalidSignature();
         }
@@ -72,49 +74,65 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
 
     /* ------------- hooks ------------- */
 
-    function _afterIdRegistered(address to, uint256 id) internal virtual {}
+    function _afterIdRegistered(
+        address collection,
+        address to,
+        uint256 id
+    ) internal virtual {}
 
-    function _afterIdDeregistered(address from, uint256 id) internal virtual {}
+    function _afterIdDeregistered(
+        address collection,
+        address from,
+        uint256 id
+    ) internal virtual {}
 
     /* ------------- private ------------- */
 
-    function registerIds(address to, uint256[] memory ids) private {
+    function registerIds(
+        address collection,
+        address to,
+        uint256[] memory ids
+    ) private {
         uint256 idsLength = ids.length;
+
+        mapping(uint256 => address) storage ownerOf = s().rootOwnerOf[collection];
 
         for (uint256 i; i < idsLength; ++i) {
             uint256 id = ids[i];
-            address rootOwner = s().rootOwnerOf[id];
+            address rootOwner = ownerOf[id];
 
             // this should not happen, because deregistering on L1 should
             // send message to burn first, or require proof of burn on L2
             if (rootOwner != address(0)) {
                 emit StateDesync(rootOwner, to, id);
 
-                delete s().rootOwnerOf[id];
+                delete ownerOf[id];
 
-                _afterIdDeregistered(rootOwner, id);
+                _afterIdDeregistered(collection, rootOwner, id);
             }
 
-            s().rootOwnerOf[id] = to;
+            ownerOf[id] = to;
 
-            _afterIdRegistered(to, id);
+            _afterIdRegistered(collection, to, id);
         }
     }
 
-    function deregisterIds(uint256[] memory ids) private {
+    function deregisterIds(address collection, uint256[] memory ids) private {
         uint256 idsLength = ids.length;
+
+        mapping(uint256 => address) storage ownerOf = s().rootOwnerOf[collection];
 
         for (uint256 i; i < idsLength; ++i) {
             uint256 id = ids[i];
-            address rootOwner = s().rootOwnerOf[id];
+            address rootOwner = ownerOf[id];
 
             // should not happen
             if (rootOwner == address(0)) {
                 emit StateDesync(address(0), address(0), id);
             } else {
-                s().rootOwnerOf[id] = address(0);
+                delete ownerOf[id];
 
-                _afterIdDeregistered(rootOwner, id);
+                _afterIdDeregistered(collection, rootOwner, id);
             }
         }
     }

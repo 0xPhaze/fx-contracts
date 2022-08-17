@@ -14,7 +14,7 @@ function s() pure returns (FxERC721EnumerableChildDS storage diamondStorage) {
 }
 
 struct FxERC721EnumerableChildDS {
-    mapping(address => UintSet) ownedIds;
+    mapping(address => mapping(address => UintSet)) ownedIds;
 }
 
 abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
@@ -28,17 +28,25 @@ abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
 
     /* ------------- public ------------- */
 
-    function getOwnedIds(address user) public view returns (uint256[] memory) {
-        return s().ownedIds[user].values();
+    function getOwnedIds(address collection, address user) public view virtual returns (uint256[] memory) {
+        return s().ownedIds[collection][user].values();
     }
 
     /* ------------- hooks ------------- */
 
-    function _afterIdRegistered(address to, uint256 id) internal override {
-        s().ownedIds[to].add(id);
+    function _afterIdRegistered(
+        address collection,
+        address to,
+        uint256 id
+    ) internal override {
+        s().ownedIds[collection][to].add(id);
     }
 
-    function _afterIdDeregistered(address from, uint256 id) internal override {
-        s().ownedIds[from].remove(id);
+    function _afterIdDeregistered(
+        address collection,
+        address from,
+        uint256 id
+    ) internal override {
+        s().ownedIds[collection][from].remove(id);
     }
 }
