@@ -11,6 +11,10 @@ abstract contract FxERC20ChildUDS is FxBaseChildTunnelUDS, ERC20UDS {
 
     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
 
+    /* ------------- virtual ------------- */
+
+    function _authorizeTunnelController() internal virtual override;
+
     /* ------------- external ------------- */
 
     function lock(address to, uint256 amount) external virtual {

@@ -11,6 +11,10 @@ abstract contract FxERC20RootUDS is FxBaseRootTunnelUDS, ERC20UDS {
 
     constructor(address checkpointManager, address fxRoot) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {}
 
+    /* ------------- virtual ------------- */
+
+    function _authorizeTunnelController() internal virtual override;
+
     /* ------------- external ------------- */
 
     function lock(address to, uint256 amount) external virtual {
