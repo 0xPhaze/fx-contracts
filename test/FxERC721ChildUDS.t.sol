@@ -46,8 +46,8 @@
 
 //     /* ------------- processMessageFromRoot() ------------- */
 
-//     bytes32 constant REGISTER_SIG = keccak256("registerIdsWithChild(address,uint256[])");
-//     bytes32 constant DEREGISTER_SIG = keccak256("deregisterIdsWithChild(uint256[])");
+//     bytes32 constant REGISTER_SIG = keccak256("registerERC721IdsWithChild(address,uint256[])");
+//     bytes32 constant DEREGISTER_SIG = keccak256("deregisterERC721IdsWithChild(uint256[])");
 
 //     function test_processMessageFromRoot() public {
 //         bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, [42].toMemory()));

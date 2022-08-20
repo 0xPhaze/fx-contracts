@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
+
 import {FxBaseChildTunnelUDS} from "./base/FxBaseChildTunnelUDS.sol";
+import {MINT_SIG} from "./FxERC20RootUDS.sol";
 
 error InvalidSignature();
 
 abstract contract FxERC20ChildUDS is FxBaseChildTunnelUDS, ERC20UDS {
-    bytes32 constant MINT_SIG = keccak256("mint(address,uint256)");
-
     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
 
     /* ------------- virtual ------------- */
@@ -20,7 +20,7 @@ abstract contract FxERC20ChildUDS is FxBaseChildTunnelUDS, ERC20UDS {
     function lock(address to, uint256 amount) external virtual {
         _burn(msg.sender, amount);
 
-        _sendMessageToRoot(abi.encode(MINT_SIG, to, amount));
+        _sendMessageToRoot(abi.encode(MINT_SIG, abi.encode(to, amount)));
     }
 
     /* ------------- internal ------------- */
@@ -30,7 +30,8 @@ abstract contract FxERC20ChildUDS is FxBaseChildTunnelUDS, ERC20UDS {
         address,
         bytes calldata message
     ) internal override {
-        (bytes32 sig, address to, uint256 amount) = abi.decode(message, (bytes32, address, uint256));
+        (bytes32 sig, bytes memory args) = abi.decode(message, (bytes32, bytes));
+        (address to, uint256 amount) = abi.decode(args, (address, uint256));
 
         if (sig != MINT_SIG) revert InvalidSignature();
 
