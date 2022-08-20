@@ -34,6 +34,12 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
 
     function _authorizeTunnelController() internal virtual override;
 
+    /* ------------- view ------------- */
+
+    function rootOwnerOf(address collection, uint256 id) public view virtual returns (address) {
+        return s().rootOwnerOf[collection][id];
+    }
+
     /* ------------- internal ------------- */
 
     // @note doesn't need to validate sender, since this already happens in FxBase

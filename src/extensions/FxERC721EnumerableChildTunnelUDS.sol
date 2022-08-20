@@ -32,6 +32,10 @@ abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
         return s().ownedIds[collection][user].values();
     }
 
+    function balanceOf(address collection, address user) public view virtual returns (uint256) {
+        return s().ownedIds[collection][user].length();
+    }
+
     /* ------------- hooks ------------- */
 
     function _afterIdRegistered(
