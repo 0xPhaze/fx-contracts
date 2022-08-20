@@ -32,6 +32,12 @@ abstract contract FxBaseChildTunnelUDS {
 
     function _authorizeTunnelController() internal virtual;
 
+    /* ------------- view ------------- */
+
+    function fxRootTunnel() public view returns (address) {
+        return s().fxRootTunnel;
+    }
+
     /* ------------- restricted ------------- */
 
     function setFxRootTunnel(address _fxRootTunnel) external {

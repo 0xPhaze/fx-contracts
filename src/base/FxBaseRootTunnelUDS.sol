@@ -74,7 +74,7 @@ abstract contract FxBaseRootTunnelUDS {
 
     /* ------------- view ------------- */
 
-    function fxChildTunnel() external view returns (address) {
+    function fxChildTunnel() public view returns (address) {
         return s().fxChildTunnel;
     }
 
