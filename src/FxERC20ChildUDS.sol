@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
-
 import {FxBaseChildTunnelUDS} from "./base/FxBaseChildTunnelUDS.sol";
 import {MINT_SIG} from "./FxERC20RootUDS.sol";
 
