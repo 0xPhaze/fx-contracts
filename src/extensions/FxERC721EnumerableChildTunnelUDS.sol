@@ -42,7 +42,7 @@ abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
         address collection,
         address to,
         uint256 id
-    ) internal override {
+    ) internal virtual override {
         s().ownedIds[collection][to].add(id);
     }
 
@@ -50,7 +50,7 @@ abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
         address collection,
         address from,
         uint256 id
-    ) internal override {
+    ) internal virtual override {
         s().ownedIds[collection][from].remove(id);
     }
 }
