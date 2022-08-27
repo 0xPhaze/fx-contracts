@@ -1,84 +1,84 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-// import "forge-std/Test.sol";
-// import "forge-std/console.sol";
+import "forge-std/Test.sol";
+import "forge-std/console.sol";
 
-// import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
-// import {UUPSUpgrade} from "UDS/proxy/UUPSUpgrade.sol";
+import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
+import {UUPSUpgrade} from "UDS/proxy/UUPSUpgrade.sol";
 
-// import "futils/futils.sol";
+import "futils/futils.sol";
 
-// import "../src/fx-portal/FxBaseChildTunnelUDS.sol";
+import "../src/base/FxBaseChildTunnelUDS.sol";
 
-// contract MockFxBaseChildTunnel is UUPSUpgrade, FxBaseChildTunnelUDS {
-//     constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
+contract MockFxBaseChildTunnel is UUPSUpgrade, FxBaseChildTunnelUDS {
+    constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
 
-//     function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade() internal override {}
 
-//     function _processMessageFromRoot(
-//         uint256,
-//         address,
-//         bytes calldata
-//     ) internal override {}
+    function _authorizeTunnelController() internal override {}
 
-//     function sendMessageToRoot(bytes calldata message) external {
-//         _sendMessageToRoot(message);
-//     }
-// }
+    function _processMessageFromRoot(
+        uint256,
+        address,
+        bytes calldata
+    ) internal override {}
 
-// contract TestFxBaseChildTunnel is Test {
-//     using futils for *;
+    function sendMessageToRoot(bytes calldata message) external {
+        _sendMessageToRoot(message);
+    }
+}
 
-//     address bob = address(0xb0b);
-//     address alice = address(0xbabe);
-//     address tester = address(this);
+contract TestFxBaseChildTunnel is Test {
+    using futils for *;
 
-//     MockFxBaseChildTunnel proxy;
-//     MockFxBaseChildTunnel logic;
+    address bob = address(0xb0b);
+    address alice = address(0xbabe);
+    address tester = address(this);
 
-//     function setUp() public {
-//         logic = new MockFxBaseChildTunnel(bob);
+    MockFxBaseChildTunnel proxy;
+    MockFxBaseChildTunnel logic;
 
-//         bytes memory initData = abi.encodePacked(FxBaseChildTunnelUDS.init.selector);
+    function setUp() public {
+        logic = new MockFxBaseChildTunnel(bob);
 
-//         proxy = MockFxBaseChildTunnel(address(new ERC1967Proxy(address(logic), initData)));
+        proxy = MockFxBaseChildTunnel(address(new ERC1967Proxy(address(logic), "")));
 
-//         proxy.setFxRootTunnel(alice);
-//     }
+        proxy.setFxRootTunnel(alice);
+    }
 
-//     /* ------------- setUp() ------------- */
+    /* ------------- setUp() ------------- */
 
-//     function test_setUp() public {
-//         assertEq(DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL, keccak256("diamond.storage.fx.base.child.tunnel"));
-//     }
+    function test_setUp() public {
+        assertEq(DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL, keccak256("diamond.storage.fx.base.child.tunnel"));
+    }
 
-//     /* ------------- sendMessageToRoot() ------------- */
+    /* ------------- sendMessageToRoot() ------------- */
 
-//     event MessageSent(bytes message);
+    event MessageSent(bytes message);
 
-//     function test_sendMessageToRoot(bytes memory message) public {
-//         vm.expectEmit(false, false, false, true, address(proxy));
-//         emit MessageSent(message);
+    function test_sendMessageToRoot(bytes memory message) public {
+        vm.expectEmit(false, false, false, true, address(proxy));
+        emit MessageSent(message);
 
-//         proxy.sendMessageToRoot(message);
-//     }
+        proxy.sendMessageToRoot(message);
+    }
 
-//     /* ------------- processMessageFromRoot() ------------- */
+    /* ------------- processMessageFromRoot() ------------- */
 
-//     function test_processMessageFromRoot() public {
-//         vm.prank(bob);
-//         proxy.processMessageFromRoot(0, alice, "");
-//     }
+    function test_processMessageFromRoot() public {
+        vm.prank(bob);
+        proxy.processMessageFromRoot(0, alice, "");
+    }
 
-//     function test_processMessageFromRoot_fail_CallerNotFxChild() public {
-//         vm.expectRevert(CallerNotFxChild.selector);
-//         proxy.processMessageFromRoot(0, tester, "");
-//     }
+    function test_processMessageFromRoot_fail_CallerNotFxChild() public {
+        vm.expectRevert(CallerNotFxChild.selector);
+        proxy.processMessageFromRoot(0, tester, "");
+    }
 
-//     function test_processMessageFromRoot_fail_InvalidRootSender() public {
-//         vm.prank(bob);
-//         vm.expectRevert(InvalidRootSender.selector);
-//         proxy.processMessageFromRoot(0, tester, "");
-//     }
-// }
+    function test_processMessageFromRoot_fail_InvalidRootSender() public {
+        vm.prank(bob);
+        vm.expectRevert(InvalidRootSender.selector);
+        proxy.processMessageFromRoot(0, tester, "");
+    }
+}
