@@ -14,7 +14,7 @@ function s() pure returns (FxERC721ChildRegistryDS storage diamondStorage) {
 }
 
 struct FxERC721ChildRegistryDS {
-    mapping(address => mapping(uint256 => address)) rootOwnerOf;
+    mapping(uint256 => address) ownerOf;
 }
 
 // ------------- error
@@ -36,8 +36,8 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
 
     /* ------------- view ------------- */
 
-    function rootOwnerOf(address collection, uint256 id) public view virtual returns (address) {
-        return s().rootOwnerOf[collection][id];
+    function ownerOf(uint256 id) public view virtual returns (address) {
+        return s().ownerOf[id];
     }
 
     /* ------------- internal ------------- */
@@ -51,13 +51,13 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
         (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
 
         if (sig == REGISTER_SIG) {
-            (address collection, address to, uint256[] memory ids) = abi.decode(data, (address, address, uint256[]));
+            (address to, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 
-            registerIds(collection, to, ids);
+            registerIds(to, ids);
         } else if (sig == DEREGISTER_SIG) {
-            (address collection, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
+            uint256[] memory ids = abi.decode(data, (uint256[]));
 
-            deregisterIds(collection, ids);
+            deregisterIds(ids);
         } else {
             revert InvalidSignature();
         }
@@ -80,65 +80,49 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
 
     /* ------------- hooks ------------- */
 
-    function _afterIdRegistered(
-        address collection,
-        address to,
-        uint256 id
-    ) internal virtual {}
+    function _afterIdRegistered(address to, uint256 id) internal virtual {}
 
-    function _afterIdDeregistered(
-        address collection,
-        address from,
-        uint256 id
-    ) internal virtual {}
+    function _afterIdDeregistered(address from, uint256 id) internal virtual {}
 
     /* ------------- private ------------- */
 
-    function registerIds(
-        address collection,
-        address to,
-        uint256[] memory ids
-    ) private {
+    function registerIds(address to, uint256[] memory ids) private {
         uint256 idsLength = ids.length;
-
-        mapping(uint256 => address) storage ownerOf = s().rootOwnerOf[collection];
 
         for (uint256 i; i < idsLength; ++i) {
             uint256 id = ids[i];
-            address rootOwner = ownerOf[id];
+            address rootOwner = s().ownerOf[id];
 
             // this should not happen, because deregistering on L1 should
             // send message to burn first, or require proof of burn on L2
             if (rootOwner != address(0)) {
                 emit StateDesync(rootOwner, to, id);
 
-                delete ownerOf[id];
+                delete s().ownerOf[id];
 
-                _afterIdDeregistered(collection, rootOwner, id);
+                _afterIdDeregistered(rootOwner, id);
             }
 
-            ownerOf[id] = to;
+            s().ownerOf[id] = to;
 
-            _afterIdRegistered(collection, to, id);
+            _afterIdRegistered(to, id);
         }
     }
 
-    function deregisterIds(address collection, uint256[] memory ids) private {
+    function deregisterIds(uint256[] memory ids) private {
         uint256 idsLength = ids.length;
-
-        mapping(uint256 => address) storage ownerOf = s().rootOwnerOf[collection];
 
         for (uint256 i; i < idsLength; ++i) {
             uint256 id = ids[i];
-            address rootOwner = ownerOf[id];
+            address rootOwner = s().ownerOf[id];
 
             // should not happen
             if (rootOwner == address(0)) {
                 emit StateDesync(address(0), address(0), id);
             } else {
-                delete ownerOf[id];
+                delete s().ownerOf[id];
 
-                _afterIdDeregistered(collection, rootOwner, id);
+                _afterIdDeregistered(rootOwner, id);
             }
         }
     }
