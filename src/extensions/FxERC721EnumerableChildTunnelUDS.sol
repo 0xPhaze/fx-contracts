@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {FxERC721ChildTunnelUDS} from "../FxERC721ChildTunnelUDS.sol";
-import {LibEnumerableSet, UintSet} from "../lib/LibEnumerableSet.sol";
+import {LibEnumerableSet, Uint256Set} from "UDS/lib/LibEnumerableSet.sol";
 
 // ------------- storage
 
@@ -14,11 +14,11 @@ function s() pure returns (FxERC721EnumerableChildDS storage diamondStorage) {
 }
 
 struct FxERC721EnumerableChildDS {
-    mapping(address => mapping(address => UintSet)) ownedIds;
+    mapping(address => Uint256Set) ownedIds;
 }
 
 abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
-    using LibEnumerableSet for UintSet;
+    using LibEnumerableSet for Uint256Set;
 
     constructor(address fxChild) FxERC721ChildTunnelUDS(fxChild) {}
 
@@ -28,29 +28,21 @@ abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721ChildTunnelUDS {
 
     /* ------------- public ------------- */
 
-    function getOwnedIds(address collection, address user) public view virtual returns (uint256[] memory) {
-        return s().ownedIds[collection][user].values();
+    function getOwnedIds(address user) public view virtual returns (uint256[] memory) {
+        return s().ownedIds[user].values();
     }
 
-    function balanceOf(address collection, address user) public view virtual returns (uint256) {
-        return s().ownedIds[collection][user].length();
+    function balanceOf(address user) public view virtual returns (uint256) {
+        return s().ownedIds[user].length();
     }
 
     /* ------------- hooks ------------- */
 
-    function _afterIdRegistered(
-        address collection,
-        address to,
-        uint256 id
-    ) internal virtual override {
-        s().ownedIds[collection][to].add(id);
+    function _afterIdRegistered(address to, uint256 id) internal virtual override {
+        s().ownedIds[to].add(id);
     }
 
-    function _afterIdDeregistered(
-        address collection,
-        address from,
-        uint256 id
-    ) internal virtual override {
-        s().ownedIds[collection][from].remove(id);
+    function _afterIdDeregistered(address from, uint256 id) internal virtual override {
+        s().ownedIds[from].remove(id);
     }
 }
