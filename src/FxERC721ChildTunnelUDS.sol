@@ -53,11 +53,11 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
         if (sig == REGISTER_SIG) {
             (address to, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 
-            registerIds(to, ids);
+            _registerIds(to, ids);
         } else if (sig == DEREGISTER_SIG) {
             uint256[] memory ids = abi.decode(data, (uint256[]));
 
-            deregisterIds(ids);
+            _deregisterIds(ids);
         } else {
             revert InvalidSignature();
         }
@@ -84,9 +84,9 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
 
     function _afterIdDeregistered(address from, uint256 id) internal virtual {}
 
-    /* ------------- private ------------- */
+    /* ------------- internal ------------- */
 
-    function registerIds(address to, uint256[] memory ids) private {
+    function _registerIds(address to, uint256[] memory ids) internal {
         uint256 idsLength = ids.length;
 
         for (uint256 i; i < idsLength; ++i) {
@@ -109,7 +109,7 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
         }
     }
 
-    function deregisterIds(uint256[] memory ids) private {
+    function _deregisterIds(uint256[] memory ids) internal {
         uint256 idsLength = ids.length;
 
         for (uint256 i; i < idsLength; ++i) {
