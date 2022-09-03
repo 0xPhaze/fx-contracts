@@ -40,10 +40,10 @@ abstract contract FxBaseChildTunnelUDS {
 
     /* ------------- restricted ------------- */
 
-    function setFxRootTunnel(address _fxRootTunnel) external {
+    function setFxRootTunnel(address fxRootTunnel_) external {
         _authorizeTunnelController();
 
-        s().fxRootTunnel = _fxRootTunnel;
+        s().fxRootTunnel = fxRootTunnel_;
     }
 
     function processMessageFromRoot(

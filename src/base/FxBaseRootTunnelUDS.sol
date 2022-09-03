@@ -82,10 +82,10 @@ abstract contract FxBaseRootTunnelUDS {
         return s().processedExits[exitHash];
     }
 
-    function setFxChildTunnel(address _fxChildTunnel) public virtual {
+    function setFxChildTunnel(address fxChildTunnel_) public virtual {
         _authorizeTunnelController();
 
-        s().fxChildTunnel = _fxChildTunnel;
+        s().fxChildTunnel = fxChildTunnel_;
     }
 
     /* ------------- internal ------------- */
