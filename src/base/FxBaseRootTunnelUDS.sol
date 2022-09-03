@@ -78,7 +78,7 @@ abstract contract FxBaseRootTunnelUDS {
         return s().fxChildTunnel;
     }
 
-    function processedExits(bytes32 exitHash) external view returns (bool) {
+    function processedExits(bytes32 exitHash) public view returns (bool) {
         return s().processedExits[exitHash];
     }
 
