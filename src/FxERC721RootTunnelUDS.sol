@@ -24,6 +24,10 @@ abstract contract FxERC721RootTunnelUDS is FxBaseRootTunnelUDS {
         _sendMessageToChild(abi.encode(REGISTER_SIG, abi.encode(to, ids)));
     }
 
+    function _registerERC721IdsWithChildMem(address to, uint256[] memory ids) internal virtual {
+        _sendMessageToChild(abi.encode(REGISTER_SIG, abi.encode(to, ids)));
+    }
+
     function _deregisterERC721IdsWithChild(uint256[] calldata ids) internal virtual {
         _sendMessageToChild(abi.encode(DEREGISTER_SIG, abi.encode(ids)));
     }

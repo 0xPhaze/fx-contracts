@@ -31,7 +31,7 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
             for (uint256 i; i < quantity; ++i) ids[i] = startId + i;
         }
 
-        _registerERC721IdsWithChild(to, ids);
+        _registerERC721IdsWithChildMem(to, ids);
     }
 
     function _lockAndTransmit(address from, uint256[] calldata ids) internal virtual {
@@ -53,8 +53,6 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
 
         _deregisterERC721IdsWithChild(ids);
     }
-
-    // bytes32 constant MINT_SIG = keccak256("mint(address,uint256[])");
 
     // // @notice using `_unlockWithProof` is the 'correct' way for transmitting messages L2 -> L1
     // // validate ERC721 burn on L2 first, then unlock on L1 with tx inclusion proof
