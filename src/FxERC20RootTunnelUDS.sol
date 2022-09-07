@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
 import {FxBaseRootTunnelUDS} from "./base/FxBaseRootTunnelUDS.sol";
-import {MINT_SIG} from "./FxERC20RootUDS.sol";
+import {MINT_ERC20_SIG} from "./FxERC20RootUDS.sol";
 
 error TransferFailed();
 error InvalidSignature();
@@ -30,7 +30,7 @@ abstract contract FxERC20RootTunnelUDS is FxBaseRootTunnelUDS, ERC20UDS {
     function lock(address to, uint256 amount) external virtual {
         if (!ERC20UDS(token).transferFrom(msg.sender, address(this), amount)) revert TransferFailed();
 
-        _sendMessageToChild(abi.encode(MINT_SIG, abi.encode(to, amount)));
+        _sendMessageToChild(abi.encode(MINT_ERC20_SIG, abi.encode(to, amount)));
     }
 
     function unlock(bytes calldata proofData) external virtual {
@@ -39,7 +39,7 @@ abstract contract FxERC20RootTunnelUDS is FxBaseRootTunnelUDS, ERC20UDS {
         (bytes32 sig, bytes memory args) = abi.decode(message, (bytes32, bytes));
         (address to, uint256 amount) = abi.decode(args, (address, uint256));
 
-        if (sig != MINT_SIG) revert InvalidSignature();
+        if (sig != MINT_ERC20_SIG) revert InvalidSignature();
 
         if (!ERC20UDS(token).transfer(to, amount)) revert TransferFailed();
     }

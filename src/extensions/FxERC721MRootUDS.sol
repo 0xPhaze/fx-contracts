@@ -62,7 +62,7 @@ abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
 
     //     (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
 
-    //     if (sig != MINT_SIG) revert InvalidSignature();
+    //     if (sig != MINT_ERC721IDS_SIG) revert InvalidSignature();
 
     //     (address from, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 

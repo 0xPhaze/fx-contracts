@@ -41,8 +41,8 @@ contract TestFxERC721SyncedChildUDS is Test {
     /* ------------- processMessageFromRoot() ------------- */
 
     function test_processMessageFromRoot() public {
-        bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, [42].toMemory()));
-        bytes memory burnMessage = abi.encode(DEREGISTER_SIG, abi.encode([42].toMemory()));
+        bytes memory mintMessage = abi.encode(REGISTER_ERC721_IDS_SIG, abi.encode(alice, [42].toMemory()));
+        bytes memory burnMessage = abi.encode(DEREGISTER_ERC721_IDS_SIG, abi.encode([42].toMemory()));
 
         // mint
         vm.prank(bob);
@@ -67,8 +67,8 @@ contract TestFxERC721SyncedChildUDS is Test {
     event StateDesync(address oldOwner, address newOwner, uint256 tokenId);
 
     function test_processMessageFromRoot_desync() public {
-        bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, [42].toMemory()));
-        bytes memory burnMessage = abi.encode(DEREGISTER_SIG, abi.encode([42].toMemory()));
+        bytes memory mintMessage = abi.encode(REGISTER_ERC721_IDS_SIG, abi.encode(alice, [42].toMemory()));
+        bytes memory burnMessage = abi.encode(DEREGISTER_ERC721_IDS_SIG, abi.encode([42].toMemory()));
 
         // burn de-sync
         vm.expectEmit(false, false, false, true);

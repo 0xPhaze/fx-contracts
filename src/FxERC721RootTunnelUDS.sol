@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 import {FxBaseRootTunnelUDS} from "./base/FxBaseRootTunnelUDS.sol";
 
-bytes32 constant REGISTER_SIG = keccak256("registerERC721IdsWithChild(address,uint256[])");
-bytes32 constant DEREGISTER_SIG = keccak256("deregisterERC721IdsWithChild(uint256[])");
+bytes32 constant REGISTER_ERC721_IDS_SIG = keccak256("registerERC721IdsWithChild(address,uint256[])");
+bytes32 constant DEREGISTER_ERC721_IDS_SIG = keccak256("deregisterERC721IdsWithChild(uint256[])");
 
 error Disabled();
 error InvalidSignature();
@@ -21,14 +21,14 @@ abstract contract FxERC721RootTunnelUDS is FxBaseRootTunnelUDS {
     /* ------------- internal ------------- */
 
     function _registerERC721IdsWithChild(address to, uint256[] calldata ids) internal virtual {
-        _sendMessageToChild(abi.encode(REGISTER_SIG, abi.encode(to, ids)));
+        _sendMessageToChild(abi.encode(REGISTER_ERC721_IDS_SIG, abi.encode(to, ids)));
     }
 
     function _registerERC721IdsWithChildMem(address to, uint256[] memory ids) internal virtual {
-        _sendMessageToChild(abi.encode(REGISTER_SIG, abi.encode(to, ids)));
+        _sendMessageToChild(abi.encode(REGISTER_ERC721_IDS_SIG, abi.encode(to, ids)));
     }
 
     function _deregisterERC721IdsWithChild(uint256[] calldata ids) internal virtual {
-        _sendMessageToChild(abi.encode(DEREGISTER_SIG, abi.encode(ids)));
+        _sendMessageToChild(abi.encode(DEREGISTER_ERC721_IDS_SIG, abi.encode(ids)));
     }
 }

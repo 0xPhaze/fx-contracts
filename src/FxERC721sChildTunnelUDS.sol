@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {FxBaseChildTunnelUDS} from "./base/FxBaseChildTunnelUDS.sol";
-import {REGISTER_SIG, DEREGISTER_SIG} from "./FxERC721RootTunnelUDS.sol";
+import {REGISTER_ERC721_IDS_SIG, DEREGISTER_ERC721_IDS_SIG} from "./FxERC721RootTunnelUDS.sol";
 
 // ------------- storage
 
@@ -44,11 +44,11 @@ abstract contract FxERC721sChildTunnelUDS is FxBaseChildTunnelUDS {
     ) internal virtual override {
         (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
 
-        if (sig == REGISTER_SIG) {
+        if (sig == REGISTER_ERC721_IDS_SIG) {
             (address collection, address to, uint256[] memory ids) = abi.decode(data, (address, address, uint256[]));
 
             registerIds(collection, to, ids);
-        } else if (sig == DEREGISTER_SIG) {
+        } else if (sig == DEREGISTER_ERC721_IDS_SIG) {
             (address collection, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 
             deregisterIds(collection, ids);

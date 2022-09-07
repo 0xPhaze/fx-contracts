@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 
 import "../src/extensions/FxERC721EnumerableChildTunnelUDS.sol";
-import {REGISTER_SIG, DEREGISTER_SIG} from "../src/FxERC721ChildTunnelUDS.sol";
+import {REGISTER_ERC721_IDS_SIG, DEREGISTER_ERC721_IDS_SIG} from "../src/FxERC721ChildTunnelUDS.sol";
 
 import {UUPSUpgrade} from "UDS/proxy/UUPSUpgrade.sol";
 import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
@@ -45,8 +45,8 @@ contract TestFxERC721ChildTunnelUDS is Test {
         uint256[] memory ids = [42, 1337, 33, 88].toMemory();
         uint256[] memory burnIds = [88, 1337].toMemory();
 
-        bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, ids));
-        bytes memory burnMessage = abi.encode(DEREGISTER_SIG, abi.encode(burnIds));
+        bytes memory mintMessage = abi.encode(REGISTER_ERC721_IDS_SIG, abi.encode(alice, ids));
+        bytes memory burnMessage = abi.encode(DEREGISTER_ERC721_IDS_SIG, abi.encode(burnIds));
 
         // mint
         vm.prank(bob);
@@ -87,8 +87,8 @@ contract TestFxERC721ChildTunnelUDS is Test {
     event StateDesync(address oldOwner, address newOwner, uint256 tokenId);
 
     function test_processMessageFromRoot_desync() public {
-        // bytes memory mintMessage = abi.encode(REGISTER_SIG, abi.encode(alice, [42].toMemory()));
-        // bytes memory burnMessage = abi.encode(DEREGISTER_SIG, abi.encode([42].toMemory()));
+        // bytes memory mintMessage = abi.encode(REGISTER_ERC721_IDS_SIG, abi.encode(alice, [42].toMemory()));
+        // bytes memory burnMessage = abi.encode(DEREGISTER_ERC721_IDS_SIG, abi.encode([42].toMemory()));
         // // burn de-sync
         // vm.expectEmit(false, false, false, true);
         // emit StateDesync(address(0), address(0), 42);
