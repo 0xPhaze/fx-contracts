@@ -17,7 +17,7 @@ struct FxERC721EnumerableChildDS {
     mapping(address => mapping(address => Uint256Set)) ownedIds;
 }
 
-abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721sChildTunnelUDS {
+abstract contract FxERC721sEnumerableChildTunnelUDS is FxERC721sChildTunnelUDS {
     using LibEnumerableSet for Uint256Set;
 
     constructor(address fxChild) FxERC721sChildTunnelUDS(fxChild) {}
