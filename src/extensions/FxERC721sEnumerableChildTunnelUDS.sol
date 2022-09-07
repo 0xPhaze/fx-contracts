@@ -6,7 +6,7 @@ import {LibEnumerableSet, Uint256Set} from "UDS/lib/LibEnumerableSet.sol";
 
 // ------------- storage
 
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD = keccak256("diamond.storage.fx.erc721.enumerable.child");
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD = keccak256("diamond.storage.fx.erc721s.enumerable.child");
 
 function s() pure returns (FxERC721EnumerableChildDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD;
@@ -32,8 +32,16 @@ abstract contract FxERC721EnumerableChildTunnelUDS is FxERC721sChildTunnelUDS {
         return s().ownedIds[collection][user].values();
     }
 
-    function balanceOf(address collection, address user) public view virtual returns (uint256) {
+    function erc721BalanceOf(address collection, address user) public view virtual returns (uint256) {
         return s().ownedIds[collection][user].length();
+    }
+
+    function userOwnsId(
+        address collection,
+        address user,
+        uint256 id
+    ) public view virtual returns (bool) {
+        return s().ownedIds[collection][user].includes(id);
     }
 
     function tokenOfOwnerByIndex(

@@ -6,7 +6,7 @@ import {REGISTER_ERC721_IDS_SIG, DEREGISTER_ERC721_IDS_SIG} from "./FxERC721Root
 
 // ------------- storage
 
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL = keccak256("diamond.storage.fx.erc721.child.tunnel");
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL = keccak256("diamond.storage.fx.erc721s.child.tunnel");
 
 function s() pure returns (FxERC721ChildRegistryDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL;
@@ -14,7 +14,7 @@ function s() pure returns (FxERC721ChildRegistryDS storage diamondStorage) {
 }
 
 struct FxERC721ChildRegistryDS {
-    mapping(address => mapping(uint256 => address)) rootOwnerOf;
+    mapping(address => mapping(uint256 => address)) ownerOf;
 }
 
 // ------------- error
@@ -33,6 +33,12 @@ abstract contract FxERC721sChildTunnelUDS is FxBaseChildTunnelUDS {
     /* ------------- virtual ------------- */
 
     function _authorizeTunnelController() internal virtual override;
+
+    /* ------------- public ------------- */
+
+    function ownerOf(address collection, uint256 id) public view virtual returns (address) {
+        return s().ownerOf[collection][id];
+    }
 
     /* ------------- internal ------------- */
 
@@ -80,23 +86,23 @@ abstract contract FxERC721sChildTunnelUDS is FxBaseChildTunnelUDS {
     ) private {
         uint256 idsLength = ids.length;
 
-        mapping(uint256 => address) storage ownerOf = s().rootOwnerOf[collection];
+        mapping(uint256 => address) storage ownerOf_ = s().ownerOf[collection];
 
         for (uint256 i; i < idsLength; ++i) {
             uint256 id = ids[i];
-            address rootOwner = ownerOf[id];
+            address rootOwner = ownerOf_[id];
 
             // this should not happen, because deregistering on L1 should
             // send message to burn first, or require proof of burn on L2
             if (rootOwner != address(0)) {
                 emit StateDesync(rootOwner, to, id);
 
-                delete ownerOf[id];
+                delete ownerOf_[id];
 
                 _afterIdDeregistered(collection, rootOwner, id);
             }
 
-            ownerOf[id] = to;
+            ownerOf_[id] = to;
 
             _afterIdRegistered(collection, to, id);
         }
@@ -105,17 +111,17 @@ abstract contract FxERC721sChildTunnelUDS is FxBaseChildTunnelUDS {
     function deregisterIds(address collection, uint256[] memory ids) private {
         uint256 idsLength = ids.length;
 
-        mapping(uint256 => address) storage ownerOf = s().rootOwnerOf[collection];
+        mapping(uint256 => address) storage ownerOf_ = s().ownerOf[collection];
 
         for (uint256 i; i < idsLength; ++i) {
             uint256 id = ids[i];
-            address rootOwner = ownerOf[id];
+            address rootOwner = ownerOf_[id];
 
             // should not happen
             if (rootOwner == address(0)) {
                 emit StateDesync(address(0), address(0), id);
             } else {
-                delete ownerOf[id];
+                delete ownerOf_[id];
 
                 _afterIdDeregistered(collection, rootOwner, id);
             }
