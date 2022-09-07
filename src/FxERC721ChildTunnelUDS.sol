@@ -58,9 +58,13 @@ abstract contract FxERC721ChildTunnelUDS is FxBaseChildTunnelUDS {
             uint256[] memory ids = abi.decode(data, (uint256[]));
 
             _deregisterIds(ids);
-        } else {
+        } else if (!_processSignature(sig, data)) {
             revert InvalidSignature();
         }
+    }
+
+    function _processSignature(bytes32, bytes memory) internal virtual returns (bool) {
+        return false;
     }
 
     /* ------------- hooks ------------- */
