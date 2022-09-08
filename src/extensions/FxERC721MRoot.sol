@@ -2,15 +2,20 @@
 pragma solidity ^0.8.0;
 
 import {ERC721M} from "ERC721M/ERC721M.sol";
-import {FxERC721RootTunnelUDS} from "../FxERC721RootTunnelUDS.sol";
+import {FxERC721Root} from "../FxERC721Root.sol";
+import {ERC721MQuery} from "ERC721M/extensions/ERC721MQuery.sol";
 
-error Disabled();
 error InvalidSignature();
 
 /// @title ERC721M FxPortal extension
 /// @author phaze (https://github.com/0xPhaze/ERC721M)
-abstract contract FxERC721MRootUDS is FxERC721RootTunnelUDS, ERC721M {
-    constructor(address checkpointManager, address fxRoot) FxERC721RootTunnelUDS(checkpointManager, fxRoot) {}
+abstract contract FxERC721MRoot is FxERC721Root, ERC721M, ERC721MQuery {
+    constructor(
+        string memory name,
+        string memory symbol,
+        address checkpointManager,
+        address fxRoot
+    ) ERC721M(name, symbol) FxERC721Root(checkpointManager, fxRoot) {}
 
     /* ------------- virtual ------------- */
 

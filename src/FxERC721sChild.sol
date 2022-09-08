@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {FxBaseChildTunnelUDS} from "./base/FxBaseChildTunnelUDS.sol";
-import {REGISTER_ERC721s_IDS_SIG, DEREGISTER_ERC721s_IDS_SIG} from "./FxERC721sRootTunnelUDS.sol";
+import {FxBaseChildTunnel} from "./base/FxBaseChildTunnel.sol";
+import {REGISTER_ERC721s_IDS_SIG, DEREGISTER_ERC721s_IDS_SIG} from "./FxERC721sRoot.sol";
 
 // ------------- storage
 
@@ -19,16 +19,14 @@ struct FxERC721ChildRegistryDS {
 
 // ------------- error
 
-error Disabled();
-error InvalidRootOwner();
 error InvalidSignature();
 
 /// @title ERC721 FxChildTunnel
 /// @author phaze (https://github.com/0xPhaze/fx-contracts)
-abstract contract FxERC721sChildTunnelUDS is FxBaseChildTunnelUDS {
-    event StateDesync(address oldOwner, address newOwner, uint256 id);
+abstract contract FxERC721sChild is FxBaseChildTunnel {
+    event StateResync(address oldOwner, address newOwner, uint256 id);
 
-    constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
+    constructor(address fxChild) FxBaseChildTunnel(fxChild) {}
 
     /* ------------- virtual ------------- */
 
@@ -99,7 +97,7 @@ abstract contract FxERC721sChildTunnelUDS is FxBaseChildTunnelUDS {
             // this should not happen, because deregistering on L1 should
             // send message to burn first, or require proof of burn on L2
             if (rootOwner != address(0)) {
-                emit StateDesync(rootOwner, to, id);
+                emit StateResync(rootOwner, to, id);
 
                 delete ownerOf_[id];
 
@@ -123,7 +121,7 @@ abstract contract FxERC721sChildTunnelUDS is FxBaseChildTunnelUDS {
 
             // should not happen
             if (rootOwner == address(0)) {
-                emit StateDesync(address(0), address(0), id);
+                emit StateResync(address(0), address(0), id);
             } else {
                 delete ownerOf_[id];
 

@@ -48,7 +48,7 @@ error InvalidReceiptProof();
 error InvalidFxChildTunnel();
 error ExitAlreadyProcessed();
 
-abstract contract FxBaseRootTunnelUDS {
+abstract contract FxBaseRootTunnel {
     using RLPReader for RLPReader.RLPItem;
     using Merkle for bytes32;
     using ExitPayloadReader for bytes;
@@ -74,11 +74,11 @@ abstract contract FxBaseRootTunnelUDS {
 
     /* ------------- view ------------- */
 
-    function fxChildTunnel() public view returns (address) {
+    function fxChildTunnel() public view virtual returns (address) {
         return s().fxChildTunnel;
     }
 
-    function processedExits(bytes32 exitHash) public view returns (bool) {
+    function processedExits(bytes32 exitHash) public view virtual returns (bool) {
         return s().processedExits[exitHash];
     }
 
@@ -90,7 +90,7 @@ abstract contract FxBaseRootTunnelUDS {
 
     /* ------------- internal ------------- */
 
-    function _sendMessageToChild(bytes memory message) internal {
+    function _sendMessageToChild(bytes memory message) internal virtual {
         if (s().fxChildTunnel == address(0)) revert FxChildUnset();
 
         fxRoot.sendMessageToChild(s().fxChildTunnel, message);

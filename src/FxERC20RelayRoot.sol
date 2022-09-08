@@ -2,26 +2,34 @@
 pragma solidity ^0.8.0;
 
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
-import {FxBaseRootTunnelUDS} from "./base/FxBaseRootTunnelUDS.sol";
-import {MINT_ERC20_SIG} from "./FxERC20RootUDS.sol";
+import {MINT_ERC20_SIG} from "./FxERC20UDSRoot.sol";
+import {FxBaseRootTunnel} from "./base/FxBaseRootTunnel.sol";
 
 error TransferFailed();
 error InvalidSignature();
 
-abstract contract FxERC20RootTunnelUDS is FxBaseRootTunnelUDS, ERC20UDS {
+/// @title ERC20 Root Tunnel
+/// @author phaze (https://github.com/0xPhaze/fx-contracts)
+abstract contract FxERC20RelayRoot is FxBaseRootTunnel {
     address public immutable token;
 
     constructor(
         address token_,
         address checkpointManager,
         address fxRoot
-    ) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {
+    ) FxBaseRootTunnel(checkpointManager, fxRoot) {
         token = token_;
     }
 
     /* ------------- virtual ------------- */
 
     function _authorizeTunnelController() internal virtual override;
+
+    /* ------------- internal ------------- */
+
+    function _mintERC20TokensWithChild(address to, uint256 amount) internal virtual {
+        _sendMessageToChild(abi.encode(MINT_ERC20_SIG, abi.encode(to, amount)));
+    }
 
     /* ------------- external ------------- */
 
@@ -30,7 +38,7 @@ abstract contract FxERC20RootTunnelUDS is FxBaseRootTunnelUDS, ERC20UDS {
     function lock(address to, uint256 amount) external virtual {
         if (!ERC20UDS(token).transferFrom(msg.sender, address(this), amount)) revert TransferFailed();
 
-        _sendMessageToChild(abi.encode(MINT_ERC20_SIG, abi.encode(to, amount)));
+        _mintERC20TokensWithChild(to, amount);
     }
 
     function unlock(bytes calldata proofData) external virtual {

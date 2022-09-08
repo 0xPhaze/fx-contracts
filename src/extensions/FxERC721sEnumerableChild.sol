@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {FxERC721sChildTunnelUDS} from "../FxERC721sChildTunnelUDS.sol";
+import {FxERC721sChild} from "../FxERC721sChild.sol";
 import {LibEnumerableSet, Uint256Set} from "UDS/lib/LibEnumerableSet.sol";
 
 // ------------- storage
@@ -17,10 +17,10 @@ struct FxERC721EnumerableChildDS {
     mapping(address => mapping(address => Uint256Set)) ownedIds;
 }
 
-abstract contract FxERC721sEnumerableChildTunnelUDS is FxERC721sChildTunnelUDS {
+abstract contract FxERC721sEnumerableChild is FxERC721sChild {
     using LibEnumerableSet for Uint256Set;
 
-    constructor(address fxChild) FxERC721sChildTunnelUDS(fxChild) {}
+    constructor(address fxChild) FxERC721sChild(fxChild) {}
 
     /* ------------- virtual ------------- */
 

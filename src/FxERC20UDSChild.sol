@@ -2,13 +2,15 @@
 pragma solidity ^0.8.0;
 
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
-import {FxBaseChildTunnelUDS} from "./base/FxBaseChildTunnelUDS.sol";
-import {MINT_ERC20_SIG} from "./FxERC20RootUDS.sol";
+import {MINT_ERC20_SIG} from "./FxERC20UDSRoot.sol";
+import {FxBaseChildTunnel} from "./base/FxBaseChildTunnel.sol";
 
 error InvalidSignature();
 
-abstract contract FxERC20ChildUDS is FxBaseChildTunnelUDS, ERC20UDS {
-    constructor(address fxChild) FxBaseChildTunnelUDS(fxChild) {}
+/// @title ERC20 Child
+/// @author phaze (https://github.com/0xPhaze/fx-contracts)
+abstract contract FxERC20UDSChild is FxBaseChildTunnel, ERC20UDS {
+    constructor(address fxChild) FxBaseChildTunnel(fxChild) {}
 
     /* ------------- virtual ------------- */
 

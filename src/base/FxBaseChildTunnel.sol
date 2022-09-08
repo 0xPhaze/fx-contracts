@@ -19,7 +19,7 @@ struct FxBaseChildTunnelDS {
 error CallerNotFxChild();
 error InvalidRootSender();
 
-abstract contract FxBaseChildTunnelUDS {
+abstract contract FxBaseChildTunnel {
     event MessageSent(bytes message);
 
     address private immutable fxChild;

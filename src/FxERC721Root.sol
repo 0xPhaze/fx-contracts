@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {FxBaseRootTunnelUDS} from "./base/FxBaseRootTunnelUDS.sol";
+import {FxBaseRootTunnel} from "./base/FxBaseRootTunnel.sol";
 
 bytes32 constant REGISTER_ERC721_IDS_SIG = keccak256("registerERC721IdsWithChild(address,uint256[])");
 bytes32 constant DEREGISTER_ERC721_IDS_SIG = keccak256("deregisterERC721IdsWithChild(uint256[])");
 
-error Disabled();
-error InvalidSignature();
-
 /// @title ERC721 FxRootTunnel
 /// @author phaze (https://github.com/0xPhaze/fx-contracts)
-abstract contract FxERC721RootTunnelUDS is FxBaseRootTunnelUDS {
-    constructor(address checkpointManager, address fxRoot) FxBaseRootTunnelUDS(checkpointManager, fxRoot) {}
+abstract contract FxERC721Root is FxBaseRootTunnel {
+    constructor(address checkpointManager, address fxRoot) FxBaseRootTunnel(checkpointManager, fxRoot) {}
 
     /* ------------- virtual ------------- */
 
