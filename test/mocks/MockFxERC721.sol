@@ -35,10 +35,6 @@ contract MockFxERC721Root is UUPSUpgrade, FxERC721Root {
         _registerERC721IdsWithChild(to, ids);
     }
 
-    function deregisterERC721IdsWithChild(uint256[] calldata ids) public {
-        _deregisterERC721IdsWithChild(ids);
-    }
-
     function _authorizeUpgrade() internal override {}
 
     function _authorizeTunnelController() internal override {}

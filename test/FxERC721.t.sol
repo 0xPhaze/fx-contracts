@@ -51,6 +51,14 @@ contract TestFxERC721 is Test {
     function assertIdsRegisteredWithChild(address to, uint256[] memory ids) internal {
         uint256[] memory idsUnique = ids.unique();
 
+        if (to == address(0)) {
+            for (uint256 i; i < idsUnique.length; i++) {
+                assertEq(child.ownerOf(idsUnique[i]), address(0));
+            }
+
+            return;
+        }
+
         uint256 userBalance = child.erc721BalanceOf(to);
 
         assertEq(userBalance, idsUnique.length);
@@ -60,8 +68,8 @@ contract TestFxERC721 is Test {
             assertTrue(idsUnique.includes(child.tokenOfOwnerByIndex(to, i)));
         }
 
-        for (uint256 i; i < ids.length; i++) {
-            assertEq(child.ownerOf(ids[i]), to);
+        for (uint256 i; i < idsUnique.length; i++) {
+            assertEq(child.ownerOf(idsUnique[i]), to);
         }
     }
 
@@ -83,7 +91,7 @@ contract TestFxERC721 is Test {
 
         assertIdsRegisteredWithChild(tester, [1, 5, 17, 8, 21].toMemory());
 
-        root.deregisterERC721IdsWithChild([22].toMemory());
+        root.registerERC721IdsWithChild(address(0), [22].toMemory());
 
         assertIdsRegisteredWithChild(tester, [1, 5, 17, 8, 21].toMemory());
 
@@ -91,7 +99,7 @@ contract TestFxERC721 is Test {
 
         assertIdsRegisteredWithChild(alice, [4].toMemory());
 
-        root.deregisterERC721IdsWithChild([4].toMemory());
+        root.registerERC721IdsWithChild(address(0), [4].toMemory());
 
         assertIdsRegisteredWithChild(alice, new uint256[](0));
 
@@ -100,11 +108,11 @@ contract TestFxERC721 is Test {
         assertIdsRegisteredWithChild(alice, [17, 21].toMemory());
         assertIdsRegisteredWithChild(tester, [5, 1, 8].toMemory());
 
-        root.deregisterERC721IdsWithChild([1, 8].toMemory());
+        root.registerERC721IdsWithChild(address(0), [1, 8].toMemory());
 
         assertIdsRegisteredWithChild(tester, [5].toMemory());
 
-        root.deregisterERC721IdsWithChild([21, 5, 17].toMemory());
+        root.registerERC721IdsWithChild(address(0), [21, 5, 17].toMemory());
 
         assertIdsRegisteredWithChild(alice, new uint256[](0));
         assertIdsRegisteredWithChild(tester, new uint256[](0));
@@ -117,7 +125,7 @@ contract TestFxERC721 is Test {
 
         assertIdsRegisteredWithChild(tester, [1, 0, 8, 26].toMemory());
 
-        root.deregisterERC721IdsWithChild([1, 0, 8, 26].toMemory());
+        root.registerERC721IdsWithChild(address(0), [1, 0, 8, 26].toMemory());
 
         assertIdsRegisteredWithChild(tester, new uint256[](0));
     }
@@ -129,7 +137,7 @@ contract TestFxERC721 is Test {
         assertIdsRegisteredWithChild(to, ids);
     }
 
-    /// fuzz test; first register ids, then deregister some
+    // /// fuzz test; first register ids, then deregister some
     function test_deregisterIdsWithChild(
         address to,
         uint256[] calldata registerIds,
@@ -137,10 +145,15 @@ contract TestFxERC721 is Test {
     ) public {
         test_registerIdsWithChild(to, registerIds);
 
-        root.deregisterERC721IdsWithChild(deregisterIds);
+        root.registerERC721IdsWithChild(address(0), deregisterIds);
+
+        uint256[] memory idsRegisteredWithChild = registerIds.unique().exclude(deregisterIds);
+
+        if (to == address(0)) {
+            return assertIdsRegisteredWithChild(address(0), idsRegisteredWithChild);
+        }
 
         uint256 userBalance = child.erc721BalanceOf(to);
-        uint256[] memory idsRegisteredWithChild = registerIds.unique().exclude(deregisterIds);
 
         assertTrue(idsRegisteredWithChild.isSubset(child.getOwnedIds(to)));
         assertEq(userBalance, idsRegisteredWithChild.length);
@@ -193,7 +206,6 @@ contract TestFxERC721 is Test {
     /// test direct call; invalid sig
     function test_processMessageFromRoot_revert_InvalidSignature(bytes32 sig, bytes calldata data) public {
         vm.assume(sig != FxERC721Child.REGISTER_ERC721_IDS_SIG);
-        vm.assume(sig != FxERC721Child.DEREGISTER_ERC721_IDS_SIG);
 
         vm.prank(tunnel);
         vm.expectRevert(FxERC721Child.InvalidSignature.selector);

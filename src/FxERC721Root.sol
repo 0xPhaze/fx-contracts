@@ -24,8 +24,4 @@ abstract contract FxERC721Root is FxBaseRootTunnel {
     function _registerERC721IdsWithChildMem(address to, uint256[] memory ids) internal virtual {
         _sendMessageToChild(abi.encode(REGISTER_ERC721_IDS_SIG, abi.encode(to, ids)));
     }
-
-    function _deregisterERC721IdsWithChild(uint256[] calldata ids) internal virtual {
-        _sendMessageToChild(abi.encode(DEREGISTER_ERC721_IDS_SIG, abi.encode(ids)));
-    }
 }

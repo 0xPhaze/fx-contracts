@@ -56,7 +56,7 @@ abstract contract FxERC721MRoot is FxERC721Root, ERC721M, ERC721MQuery {
             for (uint256 i; i < ids.length; ++i) _unlock(from, ids[i]);
         }
 
-        _deregisterERC721IdsWithChild(ids);
+        _registerERC721IdsWithChild(address(0), ids);
     }
 
     // // @notice using `_unlockWithProof` is the 'correct' way for transmitting messages L2 -> L1

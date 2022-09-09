@@ -56,17 +56,11 @@ abstract contract FxERC721sEnumerableChild is FxERC721sChild {
 
     function _afterIdRegistered(
         address collection,
+        address from,
         address to,
         uint256 id
     ) internal virtual override {
-        s().ownedIds[collection][to].add(id);
-    }
-
-    function _afterIdDeregistered(
-        address collection,
-        address from,
-        uint256 id
-    ) internal virtual override {
-        s().ownedIds[collection][from].remove(id);
+        if (from != address(0)) s().ownedIds[collection][from].remove(id);
+        if (to != address(0)) s().ownedIds[collection][to].add(id);
     }
 }

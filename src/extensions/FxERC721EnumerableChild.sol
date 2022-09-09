@@ -36,17 +36,22 @@ abstract contract FxERC721EnumerableChild is FxERC721Child {
         return s().ownedIds[user].length();
     }
 
+    function userOwnsId(address user, uint256 id) public view virtual returns (bool) {
+        return s().ownedIds[user].includes(id);
+    }
+
     function tokenOfOwnerByIndex(address user, uint256 index) public view virtual returns (uint256) {
         return s().ownedIds[user].at(index);
     }
 
     /* ------------- hooks ------------- */
 
-    function _afterIdRegistered(address to, uint256 id) internal virtual override {
-        s().ownedIds[to].add(id);
-    }
-
-    function _afterIdDeregistered(address from, uint256 id) internal virtual override {
-        s().ownedIds[from].remove(id);
+    function _afterIdRegistered(
+        address from,
+        address to,
+        uint256 id
+    ) internal virtual override {
+        if (from != address(0)) s().ownedIds[from].remove(id);
+        if (to != address(0)) s().ownedIds[to].add(id);
     }
 }

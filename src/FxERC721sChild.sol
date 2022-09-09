@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {FxBaseChildTunnel} from "./base/FxBaseChildTunnel.sol";
-import {REGISTER_ERC721s_IDS_SIG, DEREGISTER_ERC721s_IDS_SIG} from "./FxERC721sRoot.sol";
+import {REGISTER_ERC721s_IDS_SIG} from "./FxERC721sRoot.sol";
 
 // ------------- storage
 
@@ -52,10 +52,6 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
             (address collection, address to, uint256[] memory ids) = abi.decode(data, (address, address, uint256[]));
 
             registerIds(collection, to, ids);
-        } else if (sig == DEREGISTER_ERC721s_IDS_SIG) {
-            (address collection, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
-
-            deregisterIds(collection, ids);
         } else if (!_processSignature(sig, data)) {
             revert InvalidSignature();
         }
@@ -69,13 +65,8 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
 
     function _afterIdRegistered(
         address collection,
-        address to,
-        uint256 id
-    ) internal virtual {}
-
-    function _afterIdDeregistered(
-        address collection,
         address from,
+        address to,
         uint256 id
     ) internal virtual {}
 
@@ -94,39 +85,22 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
             uint256 id = ids[i];
             address rootOwner = ownerOf_[id];
 
-            // this should not happen, because deregistering on L1 should
-            // send message to burn first, or require proof of burn on L2
-            if (rootOwner != address(0)) {
+            // "Double burn". Should normally not happen.
+            if (rootOwner == address(0) && to == address(0)) {
+                emit StateResync(address(0), address(0), id);
+                continue;
+            }
+            // Registering id, but it is already owned by someone else..
+            // This should not happen, because deregistering on L1 should
+            // send message to burn first, or require proof of burn on L2.
+            // Though could happen if an explicit re-sync is triggered.
+            if (rootOwner != address(0) && to != address(0)) {
                 emit StateResync(rootOwner, to, id);
-
-                delete ownerOf_[id];
-
-                _afterIdDeregistered(collection, rootOwner, id);
             }
 
             ownerOf_[id] = to;
 
-            _afterIdRegistered(collection, to, id);
-        }
-    }
-
-    function deregisterIds(address collection, uint256[] memory ids) private {
-        uint256 idsLength = ids.length;
-
-        mapping(uint256 => address) storage ownerOf_ = s().ownerOf[collection];
-
-        for (uint256 i; i < idsLength; ++i) {
-            uint256 id = ids[i];
-            address rootOwner = ownerOf_[id];
-
-            // should not happen
-            if (rootOwner == address(0)) {
-                emit StateResync(address(0), address(0), id);
-            } else {
-                delete ownerOf_[id];
-
-                _afterIdDeregistered(collection, rootOwner, id);
-            }
+            _afterIdRegistered(collection, rootOwner, to, id);
         }
     }
 }

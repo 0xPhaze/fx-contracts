@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {FxBaseRootTunnel} from "./base/FxBaseRootTunnel.sol";
 
 bytes32 constant REGISTER_ERC721s_IDS_SIG = keccak256("registerERC721IdsWithChild(address,address,uint256[])");
-bytes32 constant DEREGISTER_ERC721s_IDS_SIG = keccak256("deregisterERC721IdsWithChild(address,uint256[])");
 
 /// @title ERC721 FxRootTunnel
 /// @author phaze (https://github.com/0xPhaze/fx-contracts)
@@ -23,9 +22,5 @@ abstract contract FxERC721sRoot is FxBaseRootTunnel {
         uint256[] calldata ids
     ) internal virtual {
         _sendMessageToChild(abi.encode(REGISTER_ERC721s_IDS_SIG, abi.encode(collection, to, ids)));
-    }
-
-    function _deregisterERC721IdsWithChild(address collection, uint256[] calldata ids) internal virtual {
-        _sendMessageToChild(abi.encode(DEREGISTER_ERC721s_IDS_SIG, abi.encode(collection, ids)));
     }
 }
