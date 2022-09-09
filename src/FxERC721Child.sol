@@ -76,10 +76,10 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
 
         for (uint256 i; i < idsLength; ++i) {
             uint256 id = ids[i];
-            address rootOwner = s().ownerOf[id];
+            address from = s().ownerOf[id];
 
             // "Double burn". Should normally not happen.
-            if (rootOwner == address(0) && to == address(0)) {
+            if (from == address(0) && to == address(0)) {
                 emit StateResync(address(0), address(0), id);
                 continue;
             }
@@ -87,13 +87,13 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
             // This should not happen, because deregistering on L1 should
             // send message to burn first, or require proof of burn on L2.
             // Though could happen if an explicit re-sync is triggered.
-            else if (rootOwner != address(0) && to != address(0)) {
-                emit StateResync(rootOwner, to, id);
+            else if (from != address(0) && to != address(0)) {
+                emit StateResync(from, to, id);
             }
 
             s().ownerOf[id] = to;
 
-            _afterIdRegistered(rootOwner, to, id);
+            _afterIdRegistered(from, to, id);
         }
     }
 }
