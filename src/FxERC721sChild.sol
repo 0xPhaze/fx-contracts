@@ -61,6 +61,43 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         return false;
     }
 
+    function registerIds(
+        address collection,
+        address to,
+        uint256[] memory ids
+    ) private {
+        uint256 length = ids.length;
+
+        for (uint256 i; i < length; ++i) {
+            _registerId(collection, to, ids[i]);
+        }
+    }
+
+    function _registerId(
+        address collection,
+        address to,
+        uint256 id
+    ) internal virtual {
+        address from = s().ownerOf[collection][id];
+
+        // "Double burn". Should normally not happen.
+        if (from == address(0) && to == address(0)) {
+            emit StateResync(address(0), address(0), id);
+            return;
+        }
+        // Registering id, but it is already owned by someone else..
+        // This should not happen, because deregistering on L1 should
+        // send message to burn first, or require proof of burn on L2.
+        // Though could happen if an explicit re-sync is triggered.
+        if (from != address(0) && to != address(0)) {
+            emit StateResync(from, to, id);
+        }
+
+        s().ownerOf[collection][id] = to;
+
+        _afterIdRegistered(collection, from, to, id);
+    }
+
     /* ------------- hooks ------------- */
 
     function _afterIdRegistered(
@@ -69,38 +106,4 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         address to,
         uint256 id
     ) internal virtual {}
-
-    /* ------------- private ------------- */
-
-    function registerIds(
-        address collection,
-        address to,
-        uint256[] memory ids
-    ) private {
-        uint256 idsLength = ids.length;
-
-        mapping(uint256 => address) storage ownerOf_ = s().ownerOf[collection];
-
-        for (uint256 i; i < idsLength; ++i) {
-            uint256 id = ids[i];
-            address from = ownerOf_[id];
-
-            // "Double burn". Should normally not happen.
-            if (from == address(0) && to == address(0)) {
-                emit StateResync(address(0), address(0), id);
-                continue;
-            }
-            // Registering id, but it is already owned by someone else..
-            // This should not happen, because deregistering on L1 should
-            // send message to burn first, or require proof of burn on L2.
-            // Though could happen if an explicit re-sync is triggered.
-            if (from != address(0) && to != address(0)) {
-                emit StateResync(from, to, id);
-            }
-
-            ownerOf_[id] = to;
-
-            _afterIdRegistered(collection, from, to, id);
-        }
-    }
 }

@@ -61,6 +61,35 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
         return false;
     }
 
+    function _registerIds(address to, uint256[] memory ids) internal virtual {
+        uint256 length = ids.length;
+
+        for (uint256 i; i < length; ++i) {
+            _registerId(to, ids[i]);
+        }
+    }
+
+    function _registerId(address to, uint256 id) internal virtual {
+        address from = s().ownerOf[id];
+
+        // "Double burn". Should normally not happen.
+        if (from == address(0) && to == address(0)) {
+            emit StateResync(address(0), address(0), id);
+            return;
+        }
+        // Registering id, but it is already owned by someone else..
+        // This should not happen, because deregistering on L1 should
+        // send message to burn first, or require proof of burn on L2.
+        // Though could happen if an explicit re-sync is triggered.
+        else if (from != address(0) && to != address(0)) {
+            emit StateResync(from, to, id);
+        }
+
+        s().ownerOf[id] = to;
+
+        _afterIdRegistered(from, to, id);
+    }
+
     /* ------------- hooks ------------- */
 
     function _afterIdRegistered(
@@ -68,32 +97,4 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
         address to,
         uint256 id
     ) internal virtual {}
-
-    /* ------------- private ------------- */
-
-    function _registerIds(address to, uint256[] memory ids) internal virtual {
-        uint256 idsLength = ids.length;
-
-        for (uint256 i; i < idsLength; ++i) {
-            uint256 id = ids[i];
-            address from = s().ownerOf[id];
-
-            // "Double burn". Should normally not happen.
-            if (from == address(0) && to == address(0)) {
-                emit StateResync(address(0), address(0), id);
-                continue;
-            }
-            // Registering id, but it is already owned by someone else..
-            // This should not happen, because deregistering on L1 should
-            // send message to burn first, or require proof of burn on L2.
-            // Though could happen if an explicit re-sync is triggered.
-            else if (from != address(0) && to != address(0)) {
-                emit StateResync(from, to, id);
-            }
-
-            s().ownerOf[id] = to;
-
-            _afterIdRegistered(from, to, id);
-        }
-    }
 }
