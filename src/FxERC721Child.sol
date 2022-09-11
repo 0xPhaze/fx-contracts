@@ -72,9 +72,10 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
     function _registerId(address to, uint256 id) internal virtual {
         address from = s().ownerOf[id];
 
-        // "Double burn". Should normally not happen.
-        if (from == address(0) && to == address(0)) {
+        // Should normally not happen unless re-syncing.
+        if (from == to) {
             emit StateResync(address(0), address(0), id);
+
             return;
         }
         // Registering id, but it is already owned by someone else..

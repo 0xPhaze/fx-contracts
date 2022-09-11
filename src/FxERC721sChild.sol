@@ -81,7 +81,7 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         address from = s().ownerOf[collection][id];
 
         // "Double burn". Should normally not happen.
-        if (from == address(0) && to == address(0)) {
+        if (from == to) {
             emit StateResync(address(0), address(0), id);
             return;
         }
