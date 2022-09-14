@@ -80,9 +80,10 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
     ) internal virtual {
         address from = s().ownerOf[collection][id];
 
-        // "Double burn". Should normally not happen.
+        // Should normally not happen unless re-syncing.
         if (from == to) {
-            emit StateResync(address(0), address(0), id);
+            emit StateResync(from, to, id);
+
             return;
         }
         // Registering id, but it is already owned by someone else..

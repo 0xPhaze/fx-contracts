@@ -74,7 +74,7 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
 
         // Should normally not happen unless re-syncing.
         if (from == to) {
-            emit StateResync(address(0), address(0), id);
+            emit StateResync(from, to, id);
 
             return;
         }
