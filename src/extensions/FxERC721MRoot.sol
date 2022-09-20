@@ -25,15 +25,21 @@ abstract contract FxERC721MRoot is FxERC721Root, ERC721M, ERC721MQuery {
 
     /* ------------- internal ------------- */
 
-    function _mintLockedAndTransmit(address to, uint256 quantity) internal virtual {
+    function _mintLockedAndTransmit(
+        address to,
+        uint256 quantity,
+        uint48 auxData
+    ) internal virtual {
         uint256 startId = _nextTokenId();
 
-        _mintAndLock(to, quantity, true);
+        _mintAndLock(to, quantity, true, auxData);
 
         uint256[] memory ids = new uint256[](quantity);
 
         unchecked {
-            for (uint256 i; i < quantity; ++i) ids[i] = startId + i;
+            for (uint256 i; i < quantity; ++i) {
+                ids[i] = startId + i;
+            }
         }
 
         _registerERC721IdsWithChildMem(to, ids);
@@ -41,7 +47,9 @@ abstract contract FxERC721MRoot is FxERC721Root, ERC721M, ERC721MQuery {
 
     function _lockAndTransmit(address from, uint256[] calldata ids) internal virtual {
         unchecked {
-            for (uint256 i; i < ids.length; ++i) _lock(from, ids[i]);
+            for (uint256 i; i < ids.length; ++i) {
+                _lock(from, ids[i]);
+            }
         }
 
         _registerERC721IdsWithChild(from, ids);
