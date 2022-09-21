@@ -14,8 +14,8 @@ contract TestFxERC20 is Test {
     using futils for *;
 
     address bob = makeAddr("bob");
+    address self = address(this);
     address alice = makeAddr("alice");
-    address tester = address(this);
 
     address tunnel;
 
@@ -37,10 +37,10 @@ contract TestFxERC20 is Test {
         root.setFxChildTunnel(address(child));
         child.setFxRootTunnel(address(root));
 
+        vm.label(address(this), "self");
         vm.label(address(root), "Root");
         vm.label(address(child), "Child");
         vm.label(address(tunnel), "Tunnel");
-        vm.label(address(this), "tester");
     }
 
     /* ------------- lock() ------------- */
@@ -48,19 +48,19 @@ contract TestFxERC20 is Test {
     function test_lock(uint256 amountIn, uint256 amountOut) public {
         amountOut = bound(amountOut, 0, amountIn);
 
-        root.mint(tester, amountIn);
-        root.lock(tester, amountOut);
+        root.mint(self, amountIn);
+        root.lock(self, amountOut);
 
-        assertEq(root.balanceOf(tester), amountIn - amountOut);
-        assertEq(child.balanceOf(tester), amountOut);
+        assertEq(root.balanceOf(self), amountIn - amountOut);
+        assertEq(child.balanceOf(self), amountOut);
     }
 
     function test_lock_revert_arithmeticError() public {
-        root.mint(tester, 100e18);
+        root.mint(self, 100e18);
 
         vm.expectRevert(stdError.arithmeticError);
 
-        root.lock(tester, 200e18);
+        root.lock(self, 200e18);
     }
 }
 
@@ -68,8 +68,8 @@ contract TestFxERC20Relay is Test {
     using futils for *;
 
     address bob = makeAddr("bob");
+    address self = address(this);
     address alice = makeAddr("alice");
-    address tester = address(this);
 
     address tunnel;
 
@@ -92,10 +92,10 @@ contract TestFxERC20Relay is Test {
 
         token.approve(address(relay), type(uint256).max);
 
+        vm.label(address(this), "self");
         vm.label(address(relay), "Relay");
         vm.label(address(child), "Child");
         vm.label(address(tunnel), "Tunnel");
-        vm.label(address(this), "tester");
     }
 
     /* ------------- lock() ------------- */
@@ -103,18 +103,18 @@ contract TestFxERC20Relay is Test {
     function test_lock(uint256 amountIn, uint256 amountOut) public {
         amountOut = bound(amountOut, 0, amountIn);
 
-        token.mint(tester, amountIn);
-        relay.lock(tester, amountOut);
+        token.mint(self, amountIn);
+        relay.lock(self, amountOut);
 
-        assertEq(token.balanceOf(tester), amountIn - amountOut);
-        assertEq(child.balanceOf(tester), amountOut);
+        assertEq(token.balanceOf(self), amountIn - amountOut);
+        assertEq(child.balanceOf(self), amountOut);
     }
 
     function test_lock_revert_arithmeticError() public {
-        token.mint(tester, 100e18);
+        token.mint(self, 100e18);
 
         vm.expectRevert(stdError.arithmeticError);
 
-        relay.lock(tester, 200e18);
+        relay.lock(self, 200e18);
     }
 }

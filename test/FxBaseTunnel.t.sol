@@ -19,8 +19,8 @@ contract TestFxBaseTunnel is Test {
     event MessageReceived(uint256 stateId, address rootMessageSender, bytes message);
 
     address bob = makeAddr("bob");
+    address self = address(this);
     address alice = makeAddr("alice");
-    address tester = address(this);
 
     address tunnel;
 
@@ -36,10 +36,10 @@ contract TestFxBaseTunnel is Test {
         root = MockFxBaseRootTunnel(address(new ERC1967Proxy(logicRoot, "")));
         child = MockFxBaseChildTunnel(address(new ERC1967Proxy(logicChild, "")));
 
+        vm.label(address(this), "self");
         vm.label(address(root), "Root");
         vm.label(address(child), "Child");
         vm.label(address(tunnel), "Tunnel");
-        vm.label(address(this), "tester");
     }
 
     /* ------------- setUp() ------------- */

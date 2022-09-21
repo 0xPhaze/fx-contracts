@@ -3,7 +3,8 @@
 	"tasks": [
 		{
             "type": "shell",
-			"command": "forge test -vvv  ",
+			"command": "forge test -vvv",
+			// "command": "forge test -vvv --no-match-contract ERC721M --mt register\\\\b",
 			"group": {
 				"kind": "test",
 				"isDefault": true

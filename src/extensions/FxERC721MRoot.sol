@@ -25,6 +25,10 @@ abstract contract FxERC721MRoot is FxERC721Root, ERC721M, ERC721MQuery {
 
     /* ------------- internal ------------- */
 
+    function _mintLockedAndTransmit(address to, uint256 quantity) internal virtual {
+        _mintLockedAndTransmit(to, quantity, 0);
+    }
+
     function _mintLockedAndTransmit(
         address to,
         uint256 quantity,

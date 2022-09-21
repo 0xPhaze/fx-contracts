@@ -46,22 +46,24 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
         address,
         bytes calldata message
     ) internal virtual override {
-        (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
+        bytes4 sig = bytes4(message[:4]);
 
-        if (sig == REGISTER_ERC721_IDS_SIG) {
-            (address to, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
+        if (sig != REGISTER_ERC721_IDS_SIG) revert InvalidSignature();
 
-            _registerIds(to, ids);
-        } else if (!_processSignature(sig, data)) {
-            revert InvalidSignature();
+        address to = address(uint160(uint256(bytes32(message[4:36]))));
+
+        uint256[] calldata ids;
+        assembly {
+            // skip 4 bytes sig + 32 bytes address to
+            let idsLenOffset := add(add(message.offset, 0x04), calldataload(add(message.offset, 0x24)))
+            ids.length := calldataload(idsLenOffset)
+            ids.offset := add(idsLenOffset, 0x20)
         }
+
+        _registerIds(to, ids);
     }
 
-    function _processSignature(bytes32, bytes memory) internal virtual returns (bool) {
-        return false;
-    }
-
-    function _registerIds(address to, uint256[] memory ids) internal virtual {
+    function _registerIds(address to, uint256[] calldata ids) internal virtual {
         uint256 length = ids.length;
 
         for (uint256 i; i < length; ++i) {
@@ -82,7 +84,7 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
         // This should not happen, because deregistering on L1 should
         // send message to burn first, or require proof of burn on L2.
         // Though could happen if an explicit re-sync is triggered.
-        else if (from != address(0) && to != address(0)) {
+        if (from != address(0) && to != address(0)) {
             emit StateResync(from, to, id);
         }
 

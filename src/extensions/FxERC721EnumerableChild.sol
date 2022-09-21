@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import {FxERC721Child} from "../FxERC721Child.sol";
 import {LibEnumerableSet, Uint256Set} from "UDS/lib/LibEnumerableSet.sol";
 
+import "forge-std/console.sol";
+
 // ------------- storage
 
 bytes32 constant DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD = keccak256("diamond.storage.fx.erc721.enumerable.child");

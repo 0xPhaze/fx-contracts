@@ -20,8 +20,8 @@ contract TestFxERC721 is Test {
     event MessageReceived(uint256 stateId, address rootMessageSender, bytes message);
 
     address bob = makeAddr("bob");
+    address self = address(this);
     address alice = makeAddr("alice");
-    address tester = address(this);
 
     address tunnel;
 
@@ -40,10 +40,10 @@ contract TestFxERC721 is Test {
         root.setFxChildTunnel(address(child));
         child.setFxRootTunnel(address(root));
 
+        vm.label(address(this), "self");
         vm.label(address(root), "Root");
         vm.label(address(child), "Child");
         vm.label(address(tunnel), "Tunnel");
-        vm.label(address(this), "tester");
     }
 
     /* ------------- helpers ------------- */
@@ -77,23 +77,23 @@ contract TestFxERC721 is Test {
 
     event StateResync(address oldOwner, address newOwner, uint256 id);
 
-    /// timeline test
+    /// journey test
     function test_register() public {
-        root.registerERC721IdsWithChild(tester, [1, 5, 17].toMemory());
+        root.registerERC721IdsWithChild(self, [1, 5, 17].toMemory());
 
-        assertIdsRegisteredWithChild(tester, [1, 5, 17].toMemory());
+        assertIdsRegisteredWithChild(self, [1, 5, 17].toMemory());
 
-        root.registerERC721IdsWithChild(tester, [5].toMemory());
+        root.registerERC721IdsWithChild(self, [5].toMemory());
 
-        assertIdsRegisteredWithChild(tester, [1, 5, 17].toMemory());
+        assertIdsRegisteredWithChild(self, [1, 5, 17].toMemory());
 
-        root.registerERC721IdsWithChild(tester, [8, 21].toMemory());
+        root.registerERC721IdsWithChild(self, [8, 21].toMemory());
 
-        assertIdsRegisteredWithChild(tester, [1, 5, 17, 8, 21].toMemory());
+        assertIdsRegisteredWithChild(self, [1, 5, 17, 8, 21].toMemory());
 
         root.registerERC721IdsWithChild(address(0), [22].toMemory());
 
-        assertIdsRegisteredWithChild(tester, [1, 5, 17, 8, 21].toMemory());
+        assertIdsRegisteredWithChild(self, [1, 5, 17, 8, 21].toMemory());
 
         root.registerERC721IdsWithChild(alice, [4].toMemory());
 
@@ -106,38 +106,56 @@ contract TestFxERC721 is Test {
         root.registerERC721IdsWithChild(alice, [17, 21].toMemory());
 
         assertIdsRegisteredWithChild(alice, [17, 21].toMemory());
-        assertIdsRegisteredWithChild(tester, [5, 1, 8].toMemory());
+        assertIdsRegisteredWithChild(self, [5, 1, 8].toMemory());
 
         root.registerERC721IdsWithChild(address(0), [1, 8].toMemory());
 
-        assertIdsRegisteredWithChild(tester, [5].toMemory());
+        assertIdsRegisteredWithChild(self, [5].toMemory());
 
         root.registerERC721IdsWithChild(address(0), [21, 5, 17].toMemory());
 
         assertIdsRegisteredWithChild(alice, new uint256[](0));
-        assertIdsRegisteredWithChild(tester, new uint256[](0));
+        assertIdsRegisteredWithChild(self, new uint256[](0));
 
-        root.registerERC721IdsWithChild(tester, [8, 26].toMemory());
+        root.registerERC721IdsWithChild(self, [8, 26].toMemory());
 
-        assertIdsRegisteredWithChild(tester, [8, 26].toMemory());
+        assertIdsRegisteredWithChild(self, [8, 26].toMemory());
 
-        root.registerERC721IdsWithChild(tester, [0, 1].toMemory());
+        root.registerERC721IdsWithChild(self, [0, 1].toMemory());
 
-        assertIdsRegisteredWithChild(tester, [1, 0, 8, 26].toMemory());
+        assertIdsRegisteredWithChild(self, [1, 0, 8, 26].toMemory());
 
         root.registerERC721IdsWithChild(address(0), [1, 0, 8, 26].toMemory());
 
-        assertIdsRegisteredWithChild(tester, new uint256[](0));
+        assertIdsRegisteredWithChild(self, new uint256[](0));
     }
 
-    /// fuzz test; register ids
+    /// register ids
     function test_registerIdsWithChild(address to, uint256[] calldata ids) public {
         root.registerERC721IdsWithChild(to, ids);
 
         assertIdsRegisteredWithChild(to, ids);
     }
 
-    // /// fuzz test; first register ids, then deregister some
+    /// register ids, multiple users
+    function test_registerIdsWithChild(
+        address to1,
+        address to2,
+        uint256[] calldata ids1,
+        uint256[] calldata ids2
+    ) public {
+        root.registerERC721IdsWithChild(to1, ids1);
+        root.registerERC721IdsWithChild(to2, ids2);
+
+        if (to1 == to2) {
+            assertIdsRegisteredWithChild(to1, ids1.union(ids2).unique());
+        } else {
+            assertIdsRegisteredWithChild(to1, ids1.exclude(ids2));
+            assertIdsRegisteredWithChild(to2, ids2);
+        }
+    }
+
+    /// first register ids, then deregister some
     function test_deregisterIdsWithChild(
         address to,
         uint256[] calldata registerIds,
@@ -204,7 +222,7 @@ contract TestFxERC721 is Test {
     }
 
     /// test direct call; invalid sig
-    function test_processMessageFromRoot_revert_InvalidSignature(bytes32 sig, bytes calldata data) public {
+    function test_processMessageFromRoot_revert_InvalidSignature(bytes4 sig, bytes calldata data) public {
         vm.assume(sig != FxERC721Child.REGISTER_ERC721_IDS_SIG);
 
         vm.prank(tunnel);

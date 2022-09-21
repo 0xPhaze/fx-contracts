@@ -32,7 +32,7 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
 
     function _authorizeTunnelController() internal virtual override;
 
-    /* ------------- public ------------- */
+    /* ------------- view ------------- */
 
     function ownerOf(address collection, uint256 id) public view virtual returns (address) {
         return s().ownerOf[collection][id];
@@ -46,26 +46,29 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         address,
         bytes calldata message
     ) internal virtual override {
-        (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
+        bytes4 sig = bytes4(message[:4]);
 
-        if (sig == REGISTER_ERC721s_IDS_SIG) {
-            (address collection, address to, uint256[] memory ids) = abi.decode(data, (address, address, uint256[]));
+        if (sig != REGISTER_ERC721s_IDS_SIG) revert InvalidSignature();
 
-            registerIds(collection, to, ids);
-        } else if (!_processSignature(sig, data)) {
-            revert InvalidSignature();
+        address collection = address(uint160(uint256(bytes32(message[4:36]))));
+        address to = address(uint160(uint256(bytes32(message[36:68]))));
+
+        uint256[] calldata ids;
+        assembly {
+            // skip 4 bytes sig + 32 bytes address collection + 32 bytes address to
+            let idsLenOffset := add(add(message.offset, 0x04), calldataload(add(message.offset, 0x44)))
+            ids.length := calldataload(idsLenOffset)
+            ids.offset := add(idsLenOffset, 0x20)
         }
+
+        _registerIds(collection, to, ids);
     }
 
-    function _processSignature(bytes32, bytes memory) internal virtual returns (bool) {
-        return false;
-    }
-
-    function registerIds(
+    function _registerIds(
         address collection,
         address to,
-        uint256[] memory ids
-    ) private {
+        uint256[] calldata ids
+    ) internal virtual {
         uint256 length = ids.length;
 
         for (uint256 i; i < length; ++i) {
