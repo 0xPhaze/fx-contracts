@@ -68,9 +68,7 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
     }
 
     function _registerIds(address to, uint256[] calldata ids) internal virtual {
-        uint256 length = ids.length;
-
-        for (uint256 i; i < length; ++i) {
+        for (uint256 i; i < ids.length; ++i) {
             _registerId(to, ids[i]);
         }
     }
