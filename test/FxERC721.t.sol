@@ -221,13 +221,13 @@ contract TestFxERC721 is Test {
         child.processMessageFromRoot(stateId, rootMessageSender, data);
     }
 
-    /// test direct call; invalid sig
-    function test_processMessageFromRoot_revert_InvalidSignature(bytes4 sig, bytes calldata data) public {
-        vm.assume(sig != FxERC721Child.REGISTER_ERC721_IDS_SIG);
+    /// test direct call; invalid selector
+    function test_processMessageFromRoot_revert_InvalidSelector(bytes4 selector, bytes calldata data) public {
+        vm.assume(selector != FxERC721Child.REGISTER_ERC721_IDS_SELECTOR);
 
         vm.prank(tunnel);
-        vm.expectRevert(FxERC721Child.InvalidSignature.selector);
+        vm.expectRevert(FxERC721Child.InvalidSelector.selector);
 
-        child.processMessageFromRoot(0, address(root), abi.encode(sig, abi.encode(data)));
+        child.processMessageFromRoot(0, address(root), abi.encode(selector, abi.encode(data)));
     }
 }

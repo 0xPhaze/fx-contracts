@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../src/FxERC721Child.sol" as FxERC721Child;
+import "../src/FxERC721sChild.sol" as FxERC721sChild;
 import "../src/base/FxBaseRootTunnel.sol" as FxBaseRoot;
 import "../src/base/FxBaseChildTunnel.sol" as FxBaseChild;
 
@@ -239,13 +239,13 @@ contract TestFxERC721s is Test {
         child.processMessageFromRoot(stateId, rootMessageSender, data);
     }
 
-    /// test direct call; invalid sig
-    function test_processMessageFromRoot_revert_InvalidSignature(bytes4 sig, bytes calldata data) public {
-        vm.assume(sig != FxERC721Child.REGISTER_ERC721_IDS_SIG);
+    /// test direct call; invalid selector
+    function test_processMessageFromRoot_revert_InvalidSelector(bytes4 selector, bytes calldata data) public {
+        vm.assume(selector != FxERC721sChild.REGISTER_ERC721s_IDS_SELECTOR);
 
         vm.prank(tunnel);
-        vm.expectRevert(FxERC721Child.InvalidSignature.selector);
+        vm.expectRevert(FxERC721sChild.InvalidSelector.selector);
 
-        child.processMessageFromRoot(0, address(root), abi.encodeWithSelector(sig, data));
+        child.processMessageFromRoot(0, address(root), abi.encodeWithSelector(selector, data));
     }
 }

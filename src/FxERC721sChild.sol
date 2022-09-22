@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {FxBaseChildTunnel} from "./base/FxBaseChildTunnel.sol";
-import {REGISTER_ERC721s_IDS_SIG} from "./FxERC721sRoot.sol";
+import {REGISTER_ERC721s_IDS_SELECTOR} from "./FxERC721sRoot.sol";
 
 // ------------- storage
 
@@ -19,11 +19,12 @@ struct FxERC721ChildRegistryDS {
 
 // ------------- error
 
-error InvalidSignature();
+error InvalidSelector();
 
 /// @title ERC721 FxChildTunnel
 /// @author phaze (https://github.com/0xPhaze/fx-contracts)
 abstract contract FxERC721sChild is FxBaseChildTunnel {
+    event Transfer(address indexed collection, address indexed from, address indexed to, uint256 id);
     event StateResync(address oldOwner, address newOwner, uint256 id);
 
     constructor(address fxChild) FxBaseChildTunnel(fxChild) {}
@@ -46,16 +47,16 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         address,
         bytes calldata message
     ) internal virtual override {
-        bytes4 sig = bytes4(message[:4]);
+        bytes4 selector = bytes4(message[:4]);
 
-        if (sig != REGISTER_ERC721s_IDS_SIG) revert InvalidSignature();
+        if (selector != REGISTER_ERC721s_IDS_SELECTOR) revert InvalidSelector();
 
         address collection = address(uint160(uint256(bytes32(message[4:36]))));
         address to = address(uint160(uint256(bytes32(message[36:68]))));
 
         uint256[] calldata ids;
         assembly {
-            // skip 4 bytes sig + 32 bytes address collection + 32 bytes address to
+            // skip 4 bytes selector + 32 bytes address collection + 32 bytes address to
             let idsLenOffset := add(add(message.offset, 0x04), calldataload(add(message.offset, 0x44)))
             ids.length := calldataload(idsLenOffset)
             ids.offset := add(idsLenOffset, 0x20)
@@ -86,20 +87,21 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         // Should normally not happen unless re-syncing.
         if (from == to) {
             emit StateResync(from, to, id);
+        } else {
+            // Registering id, but it is already owned by someone else..
+            // This should not happen, because deregistering on L1 should
+            // send message to burn first, or require proof of burn on L2.
+            // Though could happen if an explicit re-sync is triggered.
+            if (from != address(0) && to != address(0)) {
+                emit StateResync(from, to, id);
+            }
 
-            return;
+            s().ownerOf[collection][id] = to;
+
+            emit Transfer(collection, from, to, id);
+
+            _afterIdRegistered(collection, from, to, id);
         }
-        // Registering id, but it is already owned by someone else..
-        // This should not happen, because deregistering on L1 should
-        // send message to burn first, or require proof of burn on L2.
-        // Though could happen if an explicit re-sync is triggered.
-        if (from != address(0) && to != address(0)) {
-            emit StateResync(from, to, id);
-        }
-
-        s().ownerOf[collection][id] = to;
-
-        _afterIdRegistered(collection, from, to, id);
     }
 
     /* ------------- hooks ------------- */

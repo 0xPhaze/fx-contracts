@@ -5,7 +5,7 @@ import {ERC721M} from "ERC721M/ERC721M.sol";
 import {FxERC721Root} from "../FxERC721Root.sol";
 import {ERC721MQuery} from "ERC721M/extensions/ERC721MQuery.sol";
 
-error InvalidSignature();
+error InvalidSelector();
 
 /// @title ERC721M FxPortal extension
 /// @author phaze (https://github.com/0xPhaze/ERC721M)
@@ -77,9 +77,9 @@ abstract contract FxERC721MRoot is FxERC721Root, ERC721M, ERC721MQuery {
     // function _unlockWithProof(bytes calldata proofData) internal virtual {
     //     bytes memory message = _validateAndExtractMessage(proofData);
 
-    //     (bytes32 sig, bytes memory data) = abi.decode(message, (bytes32, bytes));
+    //     (bytes32 selector, bytes memory data) = abi.decode(message, (bytes32, bytes));
 
-    //     if (sig != MINT_ERC721IDS_SIG) revert InvalidSignature();
+    //     if (selector != MINT_ERC721IDS_SELECTOR) revert InvalidSelector();
 
     //     (address from, uint256[] memory ids) = abi.decode(data, (address, uint256[]));
 

@@ -2,10 +2,12 @@
 pragma solidity ^0.8.0;
 
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
-import {MINT_ERC20_SIG} from "./FxERC20UDSRoot.sol";
 import {FxBaseChildTunnel} from "./base/FxBaseChildTunnel.sol";
+import {MINT_ERC20_SELECTOR} from "./FxERC20UDSRoot.sol";
 
-error InvalidSignature();
+import "forge-std/console.sol";
+
+error InvalidSelector();
 
 /// @title ERC20 Child
 /// @author phaze (https://github.com/0xPhaze/fx-contracts)
@@ -21,7 +23,7 @@ abstract contract FxERC20UDSChild is FxBaseChildTunnel, ERC20UDS {
     function lock(address to, uint256 amount) external virtual {
         _burn(msg.sender, amount);
 
-        _sendMessageToRoot(abi.encode(MINT_ERC20_SIG, abi.encode(to, amount)));
+        _sendMessageToRoot(abi.encodeWithSelector(MINT_ERC20_SELECTOR, to, amount));
     }
 
     /* ------------- internal ------------- */
@@ -31,10 +33,11 @@ abstract contract FxERC20UDSChild is FxBaseChildTunnel, ERC20UDS {
         address,
         bytes calldata message
     ) internal override {
-        (bytes32 sig, bytes memory args) = abi.decode(message, (bytes32, bytes));
-        (address to, uint256 amount) = abi.decode(args, (address, uint256));
+        bytes4 selector = bytes4(message);
 
-        if (sig != MINT_ERC20_SIG) revert InvalidSignature();
+        (address to, uint256 amount) = abi.decode(message[4:], (address, uint256));
+
+        if (selector != MINT_ERC20_SELECTOR) revert InvalidSelector();
 
         _mint(to, amount);
     }

@@ -43,7 +43,7 @@ struct FxBaseRootTunnelDS {
 
 error FxChildUnset();
 error InvalidHeader();
-error InvalidSignature();
+error InvalidSelector();
 error InvalidReceiptProof();
 error InvalidFxChildTunnel();
 error ExitAlreadyProcessed();
@@ -57,7 +57,7 @@ abstract contract FxBaseRootTunnel {
     using ExitPayloadReader for ExitPayloadReader.LogTopics;
     using ExitPayloadReader for ExitPayloadReader.Receipt;
 
-    bytes32 private constant SEND_MESSAGE_EVENT_SIG =
+    bytes32 private constant SEND_MESSAGE_EVENT_SELECTOR =
         0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036;
 
     IFxStateSender private immutable fxRoot;
@@ -160,7 +160,7 @@ abstract contract FxBaseRootTunnel {
 
         ExitPayloadReader.LogTopics memory topics = log.getTopics();
 
-        if (bytes32(topics.getField(0).toUint()) != SEND_MESSAGE_EVENT_SIG) revert InvalidSignature();
+        if (bytes32(topics.getField(0).toUint()) != SEND_MESSAGE_EVENT_SELECTOR) revert InvalidSelector();
 
         // received message data
         bytes memory message = abi.decode(log.getData(), (bytes)); // event decodes params again, so decoding bytes to get message
