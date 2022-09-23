@@ -56,9 +56,9 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
         uint256[] calldata ids;
         // abi-decode `ids` directly in calldata.
         assembly {
-            // skip bytes4 selector + bytes32 encoded address
+            // Skip bytes4 selector + bytes32 encoded address
             // starting from message's offset in calldata
-            // to get the relative offset of the uint256[] encoded array's size
+            // to get the relative offset of the uint256[] encoded array's size.
             let idsLenOffset := add(add(message.offset, 0x04), calldataload(add(message.offset, 0x24)))
             ids.length := calldataload(idsLenOffset)
             ids.offset := add(idsLenOffset, 0x20)
