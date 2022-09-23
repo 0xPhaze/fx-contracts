@@ -56,7 +56,7 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
 
         uint256[] calldata ids;
         assembly {
-            // skip 4 bytes selector + 32 bytes address collection + 32 bytes address to
+            // Skip 4 bytes selector + 32 bytes address collection + 32 bytes address to
             let idsLenOffset := add(add(message.offset, 0x04), calldataload(add(message.offset, 0x44)))
             ids.length := calldataload(idsLenOffset)
             ids.offset := add(idsLenOffset, 0x20)

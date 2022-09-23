@@ -7,7 +7,6 @@ import {FxERC721Root} from "../../src/FxERC721Root.sol";
 import {FxERC721Child} from "../../src/FxERC721Child.sol";
 import {FxERC721sRoot} from "../../src/FxERC721sRoot.sol";
 import {FxERC721sChild} from "../../src/FxERC721sChild.sol";
-import {FxERC721MRoot} from "../../src/extensions/FxERC721MRoot.sol";
 import {FxERC721EnumerableChild} from "../../src/extensions/FxERC721EnumerableChild.sol";
 import {FxERC721sEnumerableChild} from "../../src/extensions/FxERC721sEnumerableChild.sol";
 
@@ -73,32 +72,6 @@ contract MockFxERC721sRoot is UUPSUpgrade, FxERC721sRoot {
     ) public {
         _registerERC721IdsWithChild(collection, to, ids);
     }
-
-    function _authorizeUpgrade() internal override {}
-
-    function _authorizeTunnelController() internal override {}
-}
-
-contract MockFxERC721MRoot is UUPSUpgrade, FxERC721MRoot {
-    constructor(address checkpointManager, address fxRoot) FxERC721MRoot("", "", checkpointManager, fxRoot) {}
-
-    function mint(address to, uint256 quantity) public {
-        _mint(to, quantity);
-    }
-
-    function mintAndLock(address to, uint256 quantity) public {
-        _mintLockedAndTransmit(to, quantity);
-    }
-
-    function lockFrom(address from, uint256[] calldata ids) public {
-        _lockAndTransmit(from, ids);
-    }
-
-    function unlockFrom(address from, uint256[] calldata ids) public {
-        _unlockAndTransmit(from, ids);
-    }
-
-    function tokenURI(uint256) external view override returns (string memory uri) {}
 
     function _authorizeUpgrade() internal override {}
 
