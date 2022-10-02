@@ -60,8 +60,8 @@ abstract contract FxBaseRootTunnel {
     bytes32 private constant SEND_MESSAGE_EVENT_SELECTOR =
         0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036;
 
-    IFxStateSender private immutable fxRoot;
-    ICheckpointManager private immutable checkpointManager;
+    IFxStateSender public immutable fxRoot;
+    ICheckpointManager public immutable checkpointManager;
 
     constructor(address checkpointManager_, address fxRoot_) {
         checkpointManager = ICheckpointManager(checkpointManager_);

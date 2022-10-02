@@ -22,7 +22,7 @@ error InvalidRootSender();
 abstract contract FxBaseChildTunnel {
     event MessageSent(bytes message);
 
-    address private immutable fxChild;
+    address public immutable fxChild;
 
     constructor(address fxChild_) {
         fxChild = fxChild_;

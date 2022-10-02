@@ -20,7 +20,6 @@ contract TestFxERC20 is Test {
     address tunnel;
 
     MockERC20 token;
-
     MockFxERC20UDSRoot root;
     MockFxERC20UDSChild child;
 
