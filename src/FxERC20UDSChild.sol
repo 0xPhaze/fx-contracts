@@ -5,8 +5,6 @@ import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
 import {FxBaseChildTunnel} from "./base/FxBaseChildTunnel.sol";
 import {MINT_ERC20_SELECTOR} from "./FxERC20UDSRoot.sol";
 
-import "forge-std/console.sol";
-
 error InvalidSelector();
 
 /// @title ERC20 Child
