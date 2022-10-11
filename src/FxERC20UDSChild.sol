@@ -30,7 +30,7 @@ abstract contract FxERC20UDSChild is FxBaseChildTunnel, ERC20UDS {
         uint256,
         address,
         bytes calldata message
-    ) internal override {
+    ) internal virtual override {
         bytes4 selector = bytes4(message);
 
         (address to, uint256 amount) = abi.decode(message[4:], (address, uint256));
