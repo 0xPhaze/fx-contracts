@@ -11,7 +11,11 @@ contract MockFxTunnel {
         (bool success, bytes memory reason) = child.call(
             abi.encodeWithSelector(FxBaseChildTunnel.processMessageFromRoot.selector, 0, msg.sender, message)
         );
-        require(success, string(reason));
+        assembly {
+            if iszero(success) {
+                revert(add(reason, 0x20), mload(reason))
+            }
+        }
     }
 }
 
