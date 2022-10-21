@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {FxERC721sChild} from "../FxERC721sChild.sol";
-import {LibEnumerableSet, Uint256Set} from "UDS/lib/LibEnumerableSet.sol";
+import {LibEnumerableSet} from "UDS/lib/LibEnumerableSet.sol";
 
 // ------------- storage
 
@@ -14,11 +14,11 @@ function s() pure returns (FxERC721EnumerableChildDS storage diamondStorage) {
 }
 
 struct FxERC721EnumerableChildDS {
-    mapping(address => mapping(address => Uint256Set)) ownedIds;
+    mapping(address => mapping(address => LibEnumerableSet.Uint256Set)) ownedIds;
 }
 
 abstract contract FxERC721sEnumerableChild is FxERC721sChild {
-    using LibEnumerableSet for Uint256Set;
+    using LibEnumerableSet for LibEnumerableSet.Uint256Set;
 
     constructor(address fxChild) FxERC721sChild(fxChild) {}
 
