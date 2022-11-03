@@ -15,7 +15,7 @@ contract MockFxERC721Child is UUPSUpgrade, FxERC721Child {
 
     constructor(address fxChild) FxERC721Child(fxChild) {}
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -25,7 +25,7 @@ contract MockFxERC721EnumerableChild is UUPSUpgrade, FxERC721EnumerableChild {
 
     constructor(address fxChild) FxERC721EnumerableChild(fxChild) {}
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -37,7 +37,7 @@ contract MockFxERC721Root is UUPSUpgrade, FxERC721Root {
         _registerERC721IdsWithChild(to, ids);
     }
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -47,7 +47,7 @@ contract MockFxERC721sChild is UUPSUpgrade, FxERC721sChild {
 
     constructor(address fxChild) FxERC721sChild(fxChild) {}
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -57,7 +57,7 @@ contract MockFxERC721sEnumerableChild is UUPSUpgrade, FxERC721sEnumerableChild {
 
     constructor(address fxChild) FxERC721sEnumerableChild(fxChild) {}
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -73,7 +73,7 @@ contract MockFxERC721sRoot is UUPSUpgrade, FxERC721sRoot {
         _registerERC721IdsWithChild(collection, to, ids);
     }
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }

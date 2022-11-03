@@ -20,7 +20,7 @@ contract MockFxERC20UDSChild is UUPSUpgrade, FxERC20UDSChild {
         _burn(from, amount);
     }
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -40,7 +40,7 @@ contract MockFxERC20UDSRoot is UUPSUpgrade, FxERC20UDSRoot {
         _mintERC20TokensWithChild(to, amount);
     }
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -56,7 +56,7 @@ contract MockFxERC20RelayRoot is UUPSUpgrade, FxERC20RelayRoot {
         _mintERC20TokensWithChild(to, amount);
     }
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }

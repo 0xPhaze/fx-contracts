@@ -49,12 +49,12 @@ abstract contract FxBaseChildTunnel {
     function processMessageFromRoot(
         uint256 stateId,
         address rootMessageSender,
-        bytes calldata data
+        bytes calldata message
     ) external {
         if (msg.sender != fxChild) revert CallerNotFxChild();
         if (rootMessageSender == address(0) || rootMessageSender != s().fxRootTunnel) revert InvalidRootSender();
 
-        _processMessageFromRoot(stateId, rootMessageSender, data);
+        _processMessageFromRoot(stateId, rootMessageSender, message);
     }
 
     /* ------------- internal ------------- */

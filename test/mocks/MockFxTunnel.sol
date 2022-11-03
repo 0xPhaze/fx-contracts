@@ -36,7 +36,7 @@ contract MockFxBaseChildTunnel is UUPSUpgrade, FxBaseChildTunnel {
         _sendMessageToRoot(message);
     }
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
@@ -48,7 +48,7 @@ contract MockFxBaseRootTunnel is UUPSUpgrade, FxBaseRootTunnel {
         _sendMessageToChild(message);
     }
 
-    function _authorizeUpgrade() internal override {}
+    function _authorizeUpgrade(address) internal override {}
 
     function _authorizeTunnelController() internal override {}
 }
