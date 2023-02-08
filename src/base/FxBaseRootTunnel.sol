@@ -21,9 +21,7 @@ interface ICheckpointManager {
 
 // ------------- storage
 
-/// @dev diamond storage slot `keccak256("diamond.storage.fx.base.root.tunnel")`
-bytes32 constant DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL =
-    0x3849b0d9a476107bbeb9ff6ae9ec519d63a65bac06efa495b84a43dbacfd9484;
+bytes32 constant DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL = keccak256("diamond.storage.fx.base.root.tunnel");
 
 function s() pure returns (FxBaseRootTunnelDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL;

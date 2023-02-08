@@ -6,9 +6,7 @@ import {LibEnumerableSet} from "UDS/lib/LibEnumerableSet.sol";
 
 // ------------- storage
 
-/// @dev diamond storage slot `keccak256("diamond.storage.fx.erc721.enumerable.child")`
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD =
-    0x5706052b78143e7873dfe5a5d60ca75839688997e8d54501654544643f4caa3d;
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD = keccak256("diamond.storage.fx.erc721.enumerable.child");
 
 function s() pure returns (FxERC721EnumerableChildDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD;

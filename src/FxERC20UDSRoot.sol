@@ -4,8 +4,7 @@ pragma solidity ^0.8.0;
 import {ERC20UDS} from "UDS/tokens/ERC20UDS.sol";
 import {FxBaseRootTunnel} from "./base/FxBaseRootTunnel.sol";
 
-/// @dev function selector of `mintERC20Tokens(address,uint256)`
-bytes4 constant MINT_ERC20_SELECTOR = 0x44344735;
+bytes4 constant MINT_ERC20_SELECTOR = bytes4(keccak256("mintERC20Tokens(address,uint256)"));
 
 error InvalidSelector();
 

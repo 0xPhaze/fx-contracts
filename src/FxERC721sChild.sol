@@ -6,9 +6,7 @@ import {REGISTER_ERC721s_IDS_SELECTOR} from "./FxERC721sRoot.sol";
 
 // ------------- storage
 
-/// @dev diamond storage slot `keccak256("diamond.storage.fx.erc721s.child.tunnel")`
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL =
-    0xb178638442ca9f98d83bc4e366023dce03b56d59a03060ae222d07c9b9c35c7d;
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL = keccak256("diamond.storage.fx.erc721s.child.tunnel");
 
 function s() pure returns (FxERC721sChildDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL;
