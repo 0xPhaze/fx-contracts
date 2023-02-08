@@ -16,22 +16,20 @@ interface ICheckpointManager {
     function headerBlocks(uint256 headerNumber)
         external
         view
-        returns (
-            bytes32 root,
-            uint256 start,
-            uint256 end,
-            uint256 createdAt,
-            address proposer
-        );
+        returns (bytes32 root, uint256 start, uint256 end, uint256 createdAt, address proposer);
 }
 
 // ------------- storage
 
-bytes32 constant DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL = keccak256("diamond.storage.fx.base.root.tunnel");
+/// @dev diamond storage slot `keccak256("diamond.storage.fx.base.root.tunnel")`
+bytes32 constant DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL =
+    0x3849b0d9a476107bbeb9ff6ae9ec519d63a65bac06efa495b84a43dbacfd9484;
 
 function s() pure returns (FxBaseRootTunnelDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL;
-    assembly { diamondStorage.slot := slot } // prettier-ignore
+    assembly {
+        diamondStorage.slot := slot
+    }
 }
 
 struct FxBaseRootTunnelDS {
@@ -146,17 +144,18 @@ abstract contract FxBaseRootTunnel {
 
         bytes32 receiptRoot = payload.getReceiptRoot();
         // verify receipt inclusion
-        if (!MerklePatriciaProof.verify(receipt.toBytes(), branchMaskBytes, payload.getReceiptProof(), receiptRoot))
+        if (!MerklePatriciaProof.verify(receipt.toBytes(), branchMaskBytes, payload.getReceiptProof(), receiptRoot)) {
             revert InvalidReceiptProof();
+        }
 
-        (bytes32 headerRoot, uint256 startBlock, , , ) = checkpointManager.headerBlocks(payload.getHeaderNumber());
+        (bytes32 headerRoot, uint256 startBlock,,,) = checkpointManager.headerBlocks(payload.getHeaderNumber());
 
-        bytes32 leaf = keccak256(
-            abi.encodePacked(blockNumber, payload.getBlockTime(), payload.getTxRoot(), receiptRoot)
-        );
+        bytes32 leaf =
+            keccak256(abi.encodePacked(blockNumber, payload.getBlockTime(), payload.getTxRoot(), receiptRoot));
 
-        if (!leaf.checkMembership(blockNumber - startBlock, headerRoot, payload.getBlockProof()))
+        if (!leaf.checkMembership(blockNumber - startBlock, headerRoot, payload.getBlockProof())) {
             revert InvalidHeader();
+        }
 
         ExitPayloadReader.LogTopics memory topics = log.getTopics();
 

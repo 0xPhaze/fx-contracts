@@ -6,14 +6,18 @@ import {REGISTER_ERC721s_IDS_SELECTOR} from "./FxERC721sRoot.sol";
 
 // ------------- storage
 
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL = keccak256("diamond.storage.fx.erc721s.child.tunnel");
+/// @dev diamond storage slot `keccak256("diamond.storage.fx.erc721s.child.tunnel")`
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL =
+    0xb178638442ca9f98d83bc4e366023dce03b56d59a03060ae222d07c9b9c35c7d;
 
-function s() pure returns (FxERC721ChildRegistryDS storage diamondStorage) {
+function s() pure returns (FxERC721sChildDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL;
-    assembly { diamondStorage.slot := slot } // prettier-ignore
+    assembly {
+        diamondStorage.slot := slot
+    }
 }
 
-struct FxERC721ChildRegistryDS {
+struct FxERC721sChildDS {
     mapping(address => mapping(uint256 => address)) ownerOf;
 }
 
@@ -42,11 +46,7 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
     /* ------------- internal ------------- */
 
     // @note doesn't need to validate sender, since this already happens in FxBase
-    function _processMessageFromRoot(
-        uint256,
-        address,
-        bytes calldata message
-    ) internal virtual override {
+    function _processMessageFromRoot(uint256, address, bytes calldata message) internal virtual override {
         bytes4 selector = bytes4(message[:4]);
 
         if (selector != REGISTER_ERC721s_IDS_SELECTOR) revert InvalidSelector();
@@ -65,11 +65,7 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         _registerIds(collection, to, ids);
     }
 
-    function _registerIds(
-        address collection,
-        address to,
-        uint256[] calldata ids
-    ) internal virtual {
+    function _registerIds(address collection, address to, uint256[] calldata ids) internal virtual {
         uint256 length = ids.length;
 
         for (uint256 i; i < length; ++i) {
@@ -77,11 +73,7 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
         }
     }
 
-    function _registerId(
-        address collection,
-        address to,
-        uint256 id
-    ) internal virtual {
+    function _registerId(address collection, address to, uint256 id) internal virtual {
         address from = s().ownerOf[collection][id];
 
         // Should normally not happen unless re-syncing.
@@ -106,10 +98,5 @@ abstract contract FxERC721sChild is FxBaseChildTunnel {
 
     /* ------------- hooks ------------- */
 
-    function _afterIdRegistered(
-        address collection,
-        address from,
-        address to,
-        uint256 id
-    ) internal virtual {}
+    function _afterIdRegistered(address collection, address from, address to, uint256 id) internal virtual {}
 }

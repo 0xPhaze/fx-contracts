@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../src/FxERC721Root.sol" as FxERC721Root;
 import "../src/FxERC721Child.sol" as FxERC721Child;
+import "../src/extensions/FxERC721EnumerableChild.sol" as FxERC721EnumerableChild;
 import "../src/base/FxBaseRootTunnel.sol" as FxBaseRoot;
 import "../src/base/FxBaseChildTunnel.sol" as FxBaseChild;
 
@@ -12,6 +14,10 @@ import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
 
 import "forge-std/Test.sol";
 import "futils/futils.sol";
+
+interface IRegisterERC721Ids {
+    function registerERC721IdsWithChild(address, uint256[] calldata) external;
+}
 
 contract TestFxERC721 is Test {
     using futils for *;
@@ -44,6 +50,42 @@ contract TestFxERC721 is Test {
         vm.label(address(root), "Root");
         vm.label(address(child), "Child");
         vm.label(address(tunnel), "Tunnel");
+    }
+
+    function test_setUp() public {
+        {
+            FxERC721Child.FxERC721ChildDS storage diamondStorage = FxERC721Child.s();
+
+            bytes32 slot;
+
+            assembly {
+                slot := diamondStorage.slot
+            }
+
+            assertEq(slot, keccak256("diamond.storage.fx.erc721.child.tunnel"));
+            assertEq(
+                FxERC721Child.DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL,
+                keccak256("diamond.storage.fx.erc721.child.tunnel")
+            );
+        }
+
+        {
+            FxERC721EnumerableChild.FxERC721EnumerableChildDS storage diamondStorage = FxERC721EnumerableChild.s();
+
+            bytes32 slot;
+
+            assembly {
+                slot := diamondStorage.slot
+            }
+
+            assertEq(slot, keccak256("diamond.storage.fx.erc721.enumerable.child"));
+            assertEq(
+                FxERC721EnumerableChild.DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD,
+                keccak256("diamond.storage.fx.erc721.enumerable.child")
+            );
+        }
+
+        assertEq(FxERC721Root.REGISTER_ERC721_IDS_SELECTOR, IRegisterERC721Ids.registerERC721IdsWithChild.selector);
     }
 
     /* ------------- helpers ------------- */
@@ -138,12 +180,9 @@ contract TestFxERC721 is Test {
     }
 
     /// register ids, multiple users
-    function test_registerIdsWithChild(
-        address to1,
-        address to2,
-        uint256[] calldata ids1,
-        uint256[] calldata ids2
-    ) public {
+    function test_registerIdsWithChild(address to1, address to2, uint256[] calldata ids1, uint256[] calldata ids2)
+        public
+    {
         root.registerERC721IdsWithChild(to1, ids1);
         root.registerERC721IdsWithChild(to2, ids2);
 
@@ -156,11 +195,9 @@ contract TestFxERC721 is Test {
     }
 
     /// first register ids, then deregister some
-    function test_deregisterIdsWithChild(
-        address to,
-        uint256[] calldata registerIds,
-        uint256[] calldata deregisterIds
-    ) public {
+    function test_deregisterIdsWithChild(address to, uint256[] calldata registerIds, uint256[] calldata deregisterIds)
+        public
+    {
         test_registerIdsWithChild(to, registerIds);
 
         root.registerERC721IdsWithChild(address(0), deregisterIds);

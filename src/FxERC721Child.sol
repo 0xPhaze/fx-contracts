@@ -6,14 +6,18 @@ import {REGISTER_ERC721_IDS_SELECTOR} from "./FxERC721Root.sol";
 
 // ------------- storage
 
-bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL = keccak256("diamond.storage.fx.erc721.child.tunnel");
+/// @dev diamond storage slot `keccak256("diamond.storage.fx.erc721.child.tunnel")`
+bytes32 constant DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL =
+    0xc001d528a1e2e8cbfb6d8c35f8c02fbd581080e05dcb09a52f3ab426a5ebd356;
 
-function s() pure returns (FxERC721ChildRegistryDS storage diamondStorage) {
+function s() pure returns (FxERC721ChildDS storage diamondStorage) {
     bytes32 slot = DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL;
-    assembly { diamondStorage.slot := slot } // prettier-ignore
+    assembly {
+        diamondStorage.slot := slot
+    }
 }
 
-struct FxERC721ChildRegistryDS {
+struct FxERC721ChildDS {
     mapping(uint256 => address) ownerOf;
 }
 
@@ -42,11 +46,7 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
     /* ------------- internal ------------- */
 
     // @note doesn't need to validate sender, since this already happens in FxBase
-    function _processMessageFromRoot(
-        uint256,
-        address,
-        bytes calldata message
-    ) internal virtual override {
+    function _processMessageFromRoot(uint256, address, bytes calldata message) internal virtual override {
         bytes4 selector = bytes4(message);
 
         if (selector != REGISTER_ERC721_IDS_SELECTOR) revert InvalidSelector();
@@ -98,9 +98,5 @@ abstract contract FxERC721Child is FxBaseChildTunnel {
 
     /* ------------- hooks ------------- */
 
-    function _afterIdRegistered(
-        address from,
-        address to,
-        uint256 id
-    ) internal virtual {}
+    function _afterIdRegistered(address from, address to, uint256 id) internal virtual {}
 }

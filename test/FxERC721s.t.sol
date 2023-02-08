@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../src/FxERC721sRoot.sol" as FxERC721sRoot;
 import "../src/FxERC721sChild.sol" as FxERC721sChild;
 import "../src/base/FxBaseRootTunnel.sol" as FxBaseRoot;
 import "../src/base/FxBaseChildTunnel.sol" as FxBaseChild;
+import "../src/extensions/FxERC721sEnumerableChild.sol" as FxERC721sEnumerableChild;
 
 import {MockFxTunnel} from "./mocks/MockFxTunnel.sol";
 import {MockFxERC721sEnumerableChild, MockFxERC721sRoot} from "./mocks/MockFxERC721.sol";
@@ -12,6 +14,10 @@ import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
 
 import "forge-std/Test.sol";
 import "futils/futils.sol";
+
+interface IRegisterERC721sIds {
+    function registerERC721IdsWithChild(address, address, uint256[] calldata) external;
+}
 
 contract TestFxERC721s is Test {
     using futils for *;
@@ -46,13 +52,45 @@ contract TestFxERC721s is Test {
         vm.label(address(tunnel), "Tunnel");
     }
 
+    function test_setUp() public {
+        {
+            FxERC721sChild.FxERC721sChildDS storage diamondStorage = FxERC721sChild.s();
+
+            bytes32 slot;
+
+            assembly {
+                slot := diamondStorage.slot
+            }
+
+            assertEq(slot, keccak256("diamond.storage.fx.erc721s.child.tunnel"));
+            assertEq(
+                FxERC721sChild.DIAMOND_STORAGE_FX_ERC721_CHILD_TUNNEL,
+                keccak256("diamond.storage.fx.erc721s.child.tunnel")
+            );
+        }
+
+        {
+            FxERC721sEnumerableChild.FxERC721sEnumerableChildDS storage diamondStorage = FxERC721sEnumerableChild.s();
+
+            bytes32 slot;
+
+            assembly {
+                slot := diamondStorage.slot
+            }
+
+            assertEq(slot, keccak256("diamond.storage.fx.erc721s.enumerable.child"));
+            assertEq(
+                FxERC721sEnumerableChild.DIAMOND_STORAGE_FX_ERC721_ENUMERABLE_CHILD,
+                keccak256("diamond.storage.fx.erc721s.enumerable.child")
+            );
+        }
+
+        assertEq(FxERC721sRoot.REGISTER_ERC721s_IDS_SELECTOR, IRegisterERC721sIds.registerERC721IdsWithChild.selector);
+    }
+
     /* ------------- helpers ------------- */
 
-    function assertIdsRegisteredWithChild(
-        address collection,
-        address to,
-        uint256[] memory ids
-    ) internal {
+    function assertIdsRegisteredWithChild(address collection, address to, uint256[] memory ids) internal {
         uint256[] memory idsUnique = ids.unique();
 
         if (to == address(0)) {
@@ -137,11 +175,7 @@ contract TestFxERC721s is Test {
     }
 
     /// register ids
-    function test_registerIdsWithChild(
-        address collection,
-        address to,
-        uint256[] calldata ids
-    ) public {
+    function test_registerIdsWithChild(address collection, address to, uint256[] calldata ids) public {
         root.registerERC721IdsWithChild(collection, to, ids);
 
         assertIdsRegisteredWithChild(collection, to, ids);

@@ -47,6 +47,20 @@ contract TestFxBaseTunnel is Test {
     function test_setUp() public {
         assertEq(BaseRoot.DIAMOND_STORAGE_FX_BASE_ROOT_TUNNEL, keccak256("diamond.storage.fx.base.root.tunnel"));
         assertEq(BaseChild.DIAMOND_STORAGE_FX_BASE_CHILD_TUNNEL, keccak256("diamond.storage.fx.base.child.tunnel"));
+
+        BaseRoot.FxBaseRootTunnelDS storage dsRoot = BaseRoot.s();
+        BaseChild.FxBaseChildTunnelDS storage dsChild = BaseChild.s();
+
+        bytes32 slotRoot;
+        bytes32 slotChild;
+
+        assembly {
+            slotRoot := dsRoot.slot
+            slotChild := dsChild.slot
+        }
+
+        assertEq(slotRoot, keccak256("diamond.storage.fx.base.root.tunnel"));
+        assertEq(slotChild, keccak256("diamond.storage.fx.base.child.tunnel"));
     }
 
     /* ------------- sendMessageToChild() ------------- */

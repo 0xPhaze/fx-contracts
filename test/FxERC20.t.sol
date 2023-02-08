@@ -3,12 +3,17 @@ pragma solidity ^0.8.0;
 
 import {MockFxTunnel} from "./mocks/MockFxTunnel.sol";
 import {MockFxERC20UDSChild, MockFxERC20UDSRoot, MockFxERC20RelayRoot} from "./mocks/MockFxERC20.sol";
+import {MINT_ERC20_SELECTOR} from "src/FxERC20UDSRoot.sol";
 
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
 import {ERC1967Proxy} from "UDS/proxy/ERC1967Proxy.sol";
 
 import "forge-std/Test.sol";
 import "futils/futils.sol";
+
+interface MintFn {
+    function mintERC20Tokens(address, uint256) external;
+}
 
 contract TestFxERC20 is Test {
     using futils for *;
@@ -40,6 +45,10 @@ contract TestFxERC20 is Test {
         vm.label(address(root), "Root");
         vm.label(address(child), "Child");
         vm.label(address(tunnel), "Tunnel");
+    }
+
+    function test_setUp() public {
+        assertEq(MINT_ERC20_SELECTOR, MintFn.mintERC20Tokens.selector);
     }
 
     /* ------------- lock() ------------- */
